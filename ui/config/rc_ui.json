@@ -1,0 +1,37 @@
+{
+  "ipc": {
+    "socket_path": "/run/rc/control.sock",
+    "reconnect_ms": 500,
+    "request_timeout_ms": 3000
+  },
+  "robot": {
+    "host": "10.147.17.10",
+    "bridge_port": 8765,
+    "probe_interval_ms": 2000,
+    "probe_timeout_ms": 1500
+  },
+  "lichtblick": {
+    "enabled": true,
+    "url": "file:///opt/lichtblick/index.html?ds=foxglove-websocket&ds.url=ws%3A%2F%2F{host}%3A{port}&openIn=web",
+    "chromium_flags": "--renderer-process-limit=1 --disable-gpu-shader-disk-cache",
+    "load_timeout_ms": 30000,
+    "ping_interval_ms": 3000,
+    "hang_timeout_ms": 10000
+  },
+  "net": {
+    "wifi_interface": "wlan0",
+    "zerotier_cli": "zerotier-cli",
+    "zerotier_network": "",
+    "robot_node_id": "",
+    "poll_ms": 2000
+  },
+  "ui": {
+    "theme": "dark",
+    "layout": "B",
+    "fullscreen": true,
+    "sound": true,
+    "stale_ui_ms": 1000,
+    "daemon_lost_ms": 1500,
+    "font_family": ""
+  }
+}
