@@ -79,7 +79,7 @@ A Rust process; it is the only process that owns the gamepad and the ELRS module
 * **TX loop**: A dedicated thread, `SCHED_FIFO`, timer-driven. Each tick samples the latest input state, applies the mapping (§5.1) and the arm/deadman logic (§6), then sends `RC_CHANNELS_PACKED` (0x16). The send period follows the module's timing frames (`OPENTX_SYNC`, 0x10) so frames stay in step with the ELRS packet rate. Input events update shared state only; they never drive frame timing.
 * **Telemetry RX**: Parses `LINK_STATISTICS` (0x14), `BATTERY_SENSOR` (0x08), and `FLIGHT_MODE` (0x21, robot status string) and keeps a timestamped telemetry model.
 * **Module configuration**: Implements the CRSF parameter protocol (`DEVICE_PING` 0x28, `DEVICE_INFO` 0x29, `PARAMETER_SETTINGS_ENTRY` 0x2B, `PARAMETER_READ` 0x2C, `PARAMETER_WRITE` 0x2D). This is the protocol the ELRS Lua script uses to change TX power, packet rate, and telemetry ratio.
-* **Protocol code**: Reuses `elrs_joy_crsf_protocol` from [src/elrs_joy](../src/elrs_joy/README.md), a C++20 library with no ROS dependencies, through Rust bindings (§3.5), so the handheld and robot share one CRSF implementation.
+* **Protocol code**: Reuses `elrs_joy_crsf_protocol` from [deps/elrs_joy](deps/elrs_joy/README.md), a C++20 library with no ROS dependencies, through Rust bindings (§3.5), so the handheld and robot share one CRSF implementation.
 * **Crates**: `evdev` (input, with grab), `serialport` (internal UART, full duplex, standard baud rate), and `nix`/`libc` (`SCHED_FIFO`, `mlockall`). It uses plain threads, no async runtime.
 * **Independence**: Runs and keeps the link up with no UI connected. If the UI dies, control continues.
 
@@ -388,7 +388,7 @@ Design consequences:
   * **Format**: `<STATE>[:<CODE>]`, ASCII, at most 15 characters. STATE is one of `FLT`, `WRN`, `DRV`, `RDY`; for example `FLT:MOTOR_L`, `WRN:TEMP`, `RDY`.
   * **Priority**: the highest severity wins (FAULT > WARN > operating state). If several faults are active, it reports the most severe; ties go to the oldest.
   * **Staleness**: an input that stops updating within its timeout is reported as a fault, so a dead sensor never shows as `RDY`.
-* **`foxglove_bridge`** (existing launch [kvn_foxglove_bridge.launch.py](../src/kvn-robot/kvn_robot_bringup/launch/kvn_foxglove_bridge.launch.py), hardened):
+* **`foxglove_bridge`** (existing launch [kvn_foxglove_bridge.launch.py](deps/kvn-robot/kvn_robot_bringup/launch/kvn_foxglove_bridge.launch.py), hardened):
   * `capabilities` reduced to what read-only viewing needs. No `clientPublish`, `services`, `parameters`, or `parametersSubscribe`.
   * `topic_whitelist` limited to the layout's topics.
   * A bounded `send_buffer_limit`.
@@ -409,7 +409,7 @@ Design consequences:
 
 ### 5.1 CRSF Channel Contract
 
-The handset must match the robot's existing configuration in [teleop.yaml](../src/kvn-robot/kvn_robot_bringup/config/teleop.yaml) (AETR order, mode 2):
+The handset must match the robot's existing configuration in [teleop.yaml](deps/kvn-robot/kvn_robot_bringup/config/teleop.yaml) (AETR order, mode 2):
 
 | CRSF ch | Name | Robot use | R36S source |
 |---|---|---|---|
