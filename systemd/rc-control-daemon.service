@@ -1,0 +1,47 @@
+[Unit]
+Description=Remote controller: gamepad -> CRSF -> ELRS TX module
+Documentation=file:///opt/rc/docs/design.md
+# No network ordering on purpose: the daemon must run with no WiFi, VPN or even a network
+# stack (design R3).
+After=systemd-udevd.service
+# Restart forever: never give up after a burst of crashes
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=rc
+Group=rc
+# input: evdev gamepad; dialout: the UART behind /dev/elrs_tx
+SupplementaryGroups=input dialout
+ExecStart=/usr/local/bin/control_daemon --config /etc/rc/daemon.toml
+# A crash must be back within 2 s, disarmed (plan T0.4: "daemon restart to link re-established")
+Restart=always
+RestartSec=200ms
+
+# Real-time TX loop (daemon.toml tx.rt_priority, tx.mlock)
+AmbientCapabilities=CAP_SYS_NICE CAP_IPC_LOCK
+CapabilityBoundingSet=CAP_SYS_NICE CAP_IPC_LOCK
+LimitRTPRIO=99
+LimitMEMLOCK=infinity
+# Keep the daemon off the cores the UI and WebEngine tend to saturate; the A35 has 4
+Nice=-10
+
+# /run/rc/control.sock, mode 0750 so only the rc group (the UI) can connect
+RuntimeDirectory=rc
+RuntimeDirectoryMode=0770
+# /var/lib/rc/calibration.toml
+StateDirectory=rc
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX
+DeviceAllow=char-input rw
+DeviceAllow=/dev/elrs_tx rw
+DevicePolicy=closed
+
+[Install]
+WantedBy=multi-user.target

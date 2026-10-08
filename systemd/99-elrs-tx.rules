@@ -1,0 +1,12 @@
+# Stable name for the internal UART the ELRS TX module is wired to (design §9.3).
+#
+# On the R36S (RK3326) the debug UART is UART2, which Linux calls ttyS2 (8250 driver, mainline
+# kernel on Armbian) or ttyFIQ0 (Rockchip FIQ debugger, BSP kernel on dArkOS: must be disabled
+# in the device tree first, see docs/hardware.md).
+#
+# Check the real name on the device first, then adjust KERNEL if needed:
+#   udevadm info -a -n /dev/ttyS2 | grep -E 'KERNEL|DRIVER|ff178000'
+SUBSYSTEM=="tty", KERNEL=="ttyS2", SYMLINK+="elrs_tx", GROUP="dialout", MODE="0660", TAG+="systemd"
+
+# Gamepad event nodes readable by the daemon
+SUBSYSTEM=="input", KERNEL=="event*", GROUP="input", MODE="0660"

@@ -1,0 +1,33 @@
+[Unit]
+Description=Remote controller: native UI (Qt, eglfs)
+Documentation=file:///opt/rc/docs/design.md
+# Wants, not Requires/BindsTo: the UI dying must never stop the daemon, and the daemon
+# restarting must not stop the UI (the UI reconnects by itself). No network ordering (R3).
+Wants=rc-control-daemon.service
+After=rc-control-daemon.service systemd-udevd.service
+# Restart forever: never give up after a burst of crashes
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=rc
+Group=rc
+# video/render: DRM + GPU on eglfs; audio: the alarm tone
+SupplementaryGroups=video render audio
+Environment=QT_QPA_PLATFORM=eglfs
+Environment=QT_QPA_EGLFS_ALWAYS_SET_MODE=1
+Environment=QT_QPA_EGLFS_KMS_ATOMIC=1
+Environment=XDG_RUNTIME_DIR=/run/rc-ui
+Environment="QTWEBENGINE_CHROMIUM_FLAGS=--no-sandbox --ignore-gpu-blocklist --enable-gpu-rasterization"
+ExecStart=/usr/local/bin/rc_ui --config /etc/rc/ui.json
+Restart=always
+RestartSec=500ms
+RuntimeDirectory=rc-ui
+RuntimeDirectoryMode=0700
+# WebEngine can balloon; cap it so the daemon and the kernel never starve
+MemoryMax=600M
+OOMScoreAdjust=300
+Nice=5
+
+[Install]
+WantedBy=multi-user.target
