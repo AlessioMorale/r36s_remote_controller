@@ -1,0 +1,10 @@
+[package]
+name = "elrs_crsf"
+description = "Safe CRSF API for the handheld, over the shared C++ library"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+elrs_crsf_sys = { path = "../elrs_crsf_sys" }
+cxx.workspace = true

@@ -1,0 +1,22 @@
+[package]
+name = "elrs_crsf_sys-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+elrs_crsf = { path = "../../elrs_crsf" }
+
+# Not part of the main workspace: needs nightly and cargo-fuzz
+[workspace]
+
+[[bin]]
+name = "parser_feed"
+path = "fuzz_targets/parser_feed.rs"
+test = false
+doc = false
+bench = false

@@ -1,0 +1,17 @@
+# Cross-compiling the handheld binaries (aarch64, Debian trixie userland).
+#
+#   rustup target add aarch64-unknown-linux-gnu
+#   sudo apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu    # on an x86_64 Linux host
+#   cargo build --release --target aarch64-unknown-linux-gnu -p control_daemon -p test_tools
+#
+# The C++ CRSF library is compiled by build.rs (cxx-build/cc) with CXX_aarch64_unknown_linux_gnu.
+# Binaries built with the Ubuntu cross toolchain run on trixie (glibc is backwards compatible).
+# `image/build-in-docker.sh` does all of this from macOS.
+
+[target.aarch64-unknown-linux-gnu]
+linker = "aarch64-linux-gnu-gcc"
+
+[env]
+CC_aarch64_unknown_linux_gnu = "aarch64-linux-gnu-gcc"
+CXX_aarch64_unknown_linux_gnu = "aarch64-linux-gnu-g++"
+AR_aarch64_unknown_linux_gnu = "aarch64-linux-gnu-ar"

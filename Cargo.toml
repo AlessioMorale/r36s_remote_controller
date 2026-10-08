@@ -1,0 +1,31 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/elrs_crsf_sys",
+    "crates/elrs_crsf",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+rust-version = "1.80"
+
+[workspace.dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+crossbeam-channel = "0.5"
+cxx = "1.0"
+cxx-build = "1.0"
+env_logger = "0.11"
+libc = "0.2"
+log = "0.4"
+nix = { version = "0.29", features = ["term", "fs", "poll"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serialport = { version = "4", default-features = false }
+tempfile = "3"
+toml = "0.8"
+
+[profile.release]
+debug = 1
