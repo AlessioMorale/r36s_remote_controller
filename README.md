@@ -4,6 +4,27 @@ A handheld ground station for the KVN rover (R36S handheld, ExpressLRS control l
 WiFi video). [design.md](design.md) is the design, [plan.md](plan.md) the development plan,
 [docs/results.md](docs/results.md) what is done and verified.
 
+## Getting the sources
+
+The CRSF library and the robot-side packages are git submodules, so this repo builds on its own:
+
+```bash
+git clone --recurse-submodules <url> remote_controller
+# or, in an existing clone:
+git submodule update --init
+```
+
+| Submodule | Used for |
+|---|---|
+| `deps/elrs_joy` | The C++ CRSF library the Rust crates bind to, its golden-frame fixtures, and `crsf_joy_node` |
+| `deps/kvn-robot` | The robot-side packages: `kvn_status`, `kvn_video_streamer`, `kvn_robot_bringup` (bridge, teleop config) |
+
+The robot packages also build in a ROS 2 workspace on their own (they are normal colcon packages).
+Submodule URLs are HTTPS so CI can fetch them; to push over SSH locally:
+`git config --global url."git@github.com:".insteadOf https://github.com/`.
+
+## Layout
+
 | Directory | Contents |
 |---|---|
 | `crates/elrs_crsf_sys`, `crates/elrs_crsf` | `cxx` bindings and safe Rust API over the robot's C++ CRSF library |
@@ -37,6 +58,8 @@ On a Mac there is no gamepad, so the daemon stays disarmed (and says so). On Lin
 cargo test --workspace                                   # Rust
 RC_TEST_UINPUT=1 cargo test -p control_daemon --test evdev   # Linux, needs /dev/uinput
 cmake -S ui -B build/ui -G Ninja && cmake --build build/ui && ctest --test-dir build/ui
+# ROS packages: copy deps/elrs_joy and deps/kvn-robot into a ROS 2 (Jazzy) workspace's src/, then
+colcon build --packages-up-to elrs_joy_crsf_node kvn_status kvn_video_streamer kvn_robot_bringup
 colcon test --packages-select elrs_joy_crsf_protocol elrs_joy_crsf_node kvn_status kvn_video_streamer
 ```
 
