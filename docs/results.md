@@ -251,6 +251,8 @@ Verified (Ubuntu 24.04 aarch64 container, GStreamer 1.24.2, gst-plugins-rs 0.13.
 
 Also verified: forcing H.264 (`video-caps="video/x-h264"` on the sink, `video-codecs="<H264>"` on the source) negotiates H.264 and decodes with `avdec_h264`; 14.8 fps, 0 dropped, at 5% loss + 40 ms. Software `x264enc` + `webrtcbin` took about 20% of one core on the sender and about 5% on the receiver, measured on a laptop VM core, far faster than the robot or the R36S, so not a budget figure. With no viewer connected `webrtcsink` does not encode: sender CPU was 6% idle, 20% with a viewer, and back to 6% after the viewer left (source and conversion only).
 
+Target versions: the robot runs ROS Lyrical on Ubuntu 26.04 (GStreamer 1.28.2, no packaged `webrtcsink`), the handheld Ubuntu 24.04 (GStreamer 1.24.2). `gst-plugins-rs` 0.15 builds on 26.04 (about 10 minutes the first time, with `rustup`; scripts `build_plugins_resolute.sh`). Cross-version test, two containers over a Docker network, 26.04 + plugin 0.15 sender and 24.04 + plugin 0.13 receiver, H.264 forced, `tc netem` 5% loss + 40 ms on both ends (27 packets dropped on the receiver side): 15 fps, 0 dropped frames, no errors (`cross_robot.sh`, `cross_handheld.sh`). The plugin builds are separate per distro; the two ends run different plugin versions.
+
 Not verified:
 
 * Latency (no glass-to-glass measurement), whether the sent bitrate actually adapts (only the controller's log lines were seen), and the jitter-buffer setting for teleop.
