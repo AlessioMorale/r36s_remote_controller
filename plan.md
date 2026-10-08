@@ -16,21 +16,23 @@ Results (measurements, pass/fail, decisions) go in [docs/results.md](docs/result
 
 ### Repository Layout (target)
 
+The `kvn_*` packages below are in the [kvn-robot](https://github.com/AlessioMorale/kvn-robot) repository; everything else is in this repository (the CRSF library is the `deps/elrs_joy` submodule).
+
 | Path | Contents |
 |---|---|
-| `remote_controller/crates/elrs_crsf_sys` | C++ facade and `cxx` bindings over `elrs_joy_crsf_protocol` |
-| `remote_controller/crates/elrs_crsf` | Safe Rust CRSF API |
-| `remote_controller/crates/control_daemon` | Handheld control daemon |
-| `remote_controller/crates/test_tools` | Fake TX module (pty), virtual gamepad (`uinput`) |
-| `remote_controller/ui` | QML UI and thin C++ host (CMake) |
-| `remote_controller/lichtblick` | Pinned Lichtblick build script and fixed layout |
-| `remote_controller/image` | OS image build (Armbian `userpatches` fork) or provisioning script (dArkOS) |
-| `remote_controller/systemd` | Handheld systemd units and udev rules |
-| `remote_controller/docs` | `results.md`, `budgets.md`, `ipc.md`, `hardware.md` |
+| `crates/elrs_crsf_sys` | C++ facade and `cxx` bindings over `elrs_joy_crsf_protocol` |
+| `crates/elrs_crsf` | Safe Rust CRSF API |
+| `crates/control_daemon` | Handheld control daemon |
+| `crates/test_tools` | Fake TX module (pty), virtual gamepad (`uinput`) |
+| `ui` | QML UI and thin C++ host (CMake) |
+| `lichtblick` | Pinned Lichtblick build script and fixed layout |
+| `image` | OS image build (Armbian `userpatches` fork) or provisioning script (dArkOS) |
+| `systemd` | Handheld systemd units and udev rules |
+| `docs` | `results.md`, `budgets.md`, `ipc.md`, `hardware.md` |
 | `deps/elrs_joy/...` | CRSF library and `crsf_joy_node` changes (robot and shared) |
-| `deps/kvn-robot/kvn_status` | Status node (new) |
-| `deps/kvn-robot/kvn_video_streamer` | Video streamer (new) |
-| `deps/kvn-robot/kvn_robot_bringup` | Launch and config changes |
+| `kvn_status` | Status node (new) |
+| `kvn_video_streamer` | Video streamer (new) |
+| `kvn_robot_bringup` | Launch and config changes |
 
 ### Dependency Overview
 
@@ -67,7 +69,7 @@ Phase 2 does not depend on the platform spike and can run in parallel with Phase
 
 ### T0.1 Fix the turbo-button mapping
 * **Depends on**: —
-* **Deliverables**: [teleop.yaml](deps/kvn-robot/kvn_robot_bringup/config/teleop.yaml) with `enable_turbo_button` and the header comments consistent (AUX2 = `buttons[1]`). Remove the inconsistency note in design §5.1.
+* **Deliverables**: `teleop.yaml` with `enable_turbo_button` and the header comments consistent (AUX2 = `buttons[1]`). Remove the inconsistency note in design §5.1.
 * **Verify**: On the robot, with the existing RC handset, AUX2 high gives turbo scaling on `/cmd_vel` (`ros2 topic echo /cmd_vel` shows a speed of 2.0 instead of 1.0 at full stick), and AUX4 has no effect.
 
 ### T0.2 Wire the TX module to the internal UART
@@ -227,14 +229,14 @@ Independent of Phase 1; can run in parallel.
   * Parameters `telemetry_status_enabled` and `status_topic` (default `/robot_status`).
   * `FLIGHT_MODE` sent at about 2 Hz, truncated to 15 characters.
   * Tests in `test_crsf_joy_node.cpp`.
-  * The [teleop.yaml](deps/kvn-robot/kvn_robot_bringup/config/teleop.yaml) entry.
+  * The `teleop.yaml` entry.
 * **Verify**:
   * The unit test checks the serialized frame for a published string, including truncation.
   * On hardware, a stock EdgeTX handset shows the string as the flight mode, with `ros2 topic pub /robot_status std_msgs/String "data: RDY"` changing it within 1 s.
 
 ### T2.4 Status node
 * **Depends on**: —
-* **Deliverables**: The `deps/kvn-robot/kvn_status` package:
+* **Deliverables**: The `kvn_status` package:
   * the node; the configurable input list with staleness timeouts in yaml
   * the pure reduction function with unit tests
   * a bringup launch entry
@@ -363,7 +365,7 @@ Independent of Phase 1; can run in parallel.
 
 ### T4.1 Bridge hardening
 * **Depends on**: —
-* **Deliverables**: [kvn_foxglove_bridge.launch.py](deps/kvn-robot/kvn_robot_bringup/launch/kvn_foxglove_bridge.launch.py) with:
+* **Deliverables**: `kvn_foxglove_bridge.launch.py` with:
   * `capabilities` read-only
   * a `topic_whitelist` matching `lichtblick/layout.json`
   * `send_buffer_limit`
@@ -374,7 +376,7 @@ Independent of Phase 1; can run in parallel.
 
 ### T4.2 Video streamer
 * **Depends on**: T0.3
-* **Deliverables**: The `deps/kvn-robot/kvn_video_streamer` package:
+* **Deliverables**: The `kvn_video_streamer` package:
   * the camera → scale → frame-rate reduction → H.264 → `foxglove_msgs/CompressedVideo` pipeline;
   * all stream settings as parameters;
   * encoding on demand (subscribers only);

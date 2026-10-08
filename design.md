@@ -374,6 +374,8 @@ Design consequences:
 
 ## 4. Robot Components
 
+The robot-side packages (`kvn_status`, `kvn_video_streamer`, `kvn_robot_bringup`) live in the [kvn-robot](https://github.com/AlessioMorale/kvn-robot) repository.
+
 * **`crsf_joy_node`** (existing, `elrs_joy`): CRSF → `/joy` with failsafe. Extended to send a **robot status string** over `FLIGHT_MODE` (0x21) in addition to battery. It subscribes to the status node's string topic and forwards it as-is at about 2 Hz; it has no knowledge of what the status means.
 * **Status node** (new, ad-hoc; working name `kvn_status_node`): collects robot health from several sources and reduces it to one short status string for ELRS.
   * **Inputs**:
@@ -388,7 +390,7 @@ Design consequences:
   * **Format**: `<STATE>[:<CODE>]`, ASCII, at most 15 characters. STATE is one of `FLT`, `WRN`, `DRV`, `RDY`; for example `FLT:MOTOR_L`, `WRN:TEMP`, `RDY`.
   * **Priority**: the highest severity wins (FAULT > WARN > operating state). If several faults are active, it reports the most severe; ties go to the oldest.
   * **Staleness**: an input that stops updating within its timeout is reported as a fault, so a dead sensor never shows as `RDY`.
-* **`foxglove_bridge`** (existing launch [kvn_foxglove_bridge.launch.py](deps/kvn-robot/kvn_robot_bringup/launch/kvn_foxglove_bridge.launch.py), hardened):
+* **`foxglove_bridge`** (existing `kvn_foxglove_bridge.launch.py`, hardened):
   * `capabilities` reduced to what read-only viewing needs. No `clientPublish`, `services`, `parameters`, or `parametersSubscribe`.
   * `topic_whitelist` limited to the layout's topics.
   * A bounded `send_buffer_limit`.
@@ -409,7 +411,7 @@ Design consequences:
 
 ### 5.1 CRSF Channel Contract
 
-The handset must match the robot's existing configuration in [teleop.yaml](deps/kvn-robot/kvn_robot_bringup/config/teleop.yaml) (AETR order, mode 2):
+The handset must match the robot's existing configuration in `teleop.yaml` (AETR order, mode 2):
 
 | CRSF ch | Name | Robot use | R36S source |
 |---|---|---|---|
