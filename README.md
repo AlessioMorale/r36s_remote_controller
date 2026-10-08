@@ -34,7 +34,7 @@ Submodule URLs are HTTPS so CI can fetch them; to push over SSH locally:
 | `lichtblick` | Pinned Lichtblick build and fixed layout |
 | `systemd` | Handheld units and the `/dev/elrs_tx` udev rule |
 | `image` | Armbian / dArkOS provisioning, cross-build helpers |
-| `docs` | `ipc.md` (daemon ↔ UI), `budgets.md`, `hardware.md`, `results.md`, screenshots |
+| `docs` | `ui.md` (screens and navigation), `ipc.md` (daemon ↔ UI), `budgets.md`, `hardware.md`, `results.md`, screenshots |
 
 ## Try it on a desktop (no hardware)
 
