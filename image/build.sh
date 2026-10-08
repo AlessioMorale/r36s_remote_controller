@@ -12,13 +12,12 @@
 # aarch64 Linux (Ubuntu 24.04 container); the UI is verified on macOS/Qt 6.11 only.
 set -euo pipefail
 
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-out="${1:-$root/remote_controller/dist}"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+out="${1:-$root/dist}"
 mkdir -p "$out"
 
 docker run --rm --platform linux/arm64 \
-  -v "$root/src/elrs_joy:/ws/src/elrs_joy:ro" \
-  -v "$root/remote_controller:/ws/remote_controller:ro" \
+  -v "$root:/ws/remote_controller:ro" \
   -v "$out:/out" \
   --tmpfs /build:size=6g,exec \
   debian:trixie bash -euxc '

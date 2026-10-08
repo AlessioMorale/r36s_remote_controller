@@ -1,0 +1,8 @@
+[submodule "elrs_joy"]
+	path = deps/elrs_joy
+	url = https://github.com/AlessioMorale/ros_elrs_joy.git
+	branch = main
+[submodule "kvn-robot"]
+	path = deps/kvn-robot
+	url = https://github.com/AlessioMorale/kvn-robot.git
+	branch = main

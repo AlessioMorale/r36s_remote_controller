@@ -5,13 +5,18 @@ use std::path::PathBuf;
 
 fn main() {
     let manifest = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-    // Override with ELRS_CRSF_PROTOCOL_DIR when building outside this workspace layout
+    // The library is the deps/elrs_joy submodule; ELRS_CRSF_PROTOCOL_DIR overrides it
     let protocol_dir = std::env::var("ELRS_CRSF_PROTOCOL_DIR")
         .map(PathBuf::from)
-        .unwrap_or_else(|_| manifest.join("../../../src/elrs_joy/elrs_joy_crsf_protocol"));
+        .unwrap_or_else(|_| manifest.join("../../deps/elrs_joy/elrs_joy_crsf_protocol"));
     let protocol_dir = protocol_dir
         .canonicalize()
-        .unwrap_or_else(|_| panic!("CRSF library not found at {}", protocol_dir.display()));
+        .unwrap_or_else(|_| {
+            panic!(
+                "CRSF library not found at {} (run `git submodule update --init`)",
+                protocol_dir.display()
+            )
+        });
 
     let sources: Vec<PathBuf> = std::fs::read_dir(protocol_dir.join("src/crsf"))
         .expect("read src/crsf")

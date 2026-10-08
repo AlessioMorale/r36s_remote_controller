@@ -1,4 +1,4 @@
-//! The C++ library's golden frames (src/elrs_joy/elrs_joy_crsf_protocol/test/fixtures),
+//! The C++ library's golden frames (deps/elrs_joy/elrs_joy_crsf_protocol/test/fixtures),
 //! read through the bindings: each must parse to one frame, decode, and re-encode byte-exact.
 
 use elrs_crsf::{decode_bytes, parse_param_entry, reencode, Frame, ParamAssembler, ParamType, Parser};
@@ -6,7 +6,7 @@ use std::path::PathBuf;
 
 fn fixtures_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../../src/elrs_joy/elrs_joy_crsf_protocol/test/fixtures")
+        .join("../../deps/elrs_joy/elrs_joy_crsf_protocol/test/fixtures")
 }
 
 fn load(name: &str) -> Vec<u8> {
