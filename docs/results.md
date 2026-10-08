@@ -253,8 +253,7 @@ Also verified: forcing H.264 (`video-caps="video/x-h264"` on the sink, `video-co
 
 Not verified:
 
-* Latency (no glass-to-glass measurement), whether the bitrate adapts as intended (only the controller's log lines were seen), and the jitter-buffer setting for teleop.
-* Bitrate adaptation as seen on the wire, and the jitter-buffer setting for teleop.
+* Latency (no glass-to-glass measurement), whether the sent bitrate actually adapts (only the controller's log lines were seen), and the jitter-buffer setting for teleop.
 * The robot's SoC and its encoder. In gst-plugins-rs 0.13.7 `webrtcsink` adapts the bitrate only for `x264enc`, `openh264enc`, `vp8enc`/`vp9enc`, `nvh264enc`, `vaapih264enc`, `qsvh264enc`, `nvv4l2h264enc` and `vpuenc_h264`. It does not for the generic `v4l2h264enc` or `mpph264enc` ("Bitrate handling is not supported yet"), so on those the choice is software x264, a small patch to the plugin, or a fixed bitrate with a pre-encoded input.
 * The R36S side: `webrtcsrc` on the handheld image, hardware decode, CPU and RAM.
 * Integration into `kvn_video_streamer` and the Qt UI.
