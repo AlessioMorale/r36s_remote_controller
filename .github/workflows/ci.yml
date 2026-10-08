@@ -1,0 +1,119 @@
+name: ci
+
+# Plan T3.10. Self-contained: the CRSF library and the robot packages come from the
+# deps/ submodules. Hardware acceptance tests (plan Phase 5) do not run here.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ros:
+    name: colcon test (elrs_joy, kvn_status, video, bringup)
+    runs-on: ubuntu-24.04
+    container: ros:jazzy-ros-base
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - name: Dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            ros-dev-tools libboost-dev libasio-dev python3-pytest \
+            ros-jazzy-diagnostic-updater ros-jazzy-foxglove-msgs ros-jazzy-ament-lint-auto \
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-plugins-bad gstreamer1.0-libav
+      - name: Build and test
+        shell: bash
+        run: |
+          mkdir -p ws/src && cp -r deps/elrs_joy deps/kvn-robot ws/src/
+          cd ws && source /opt/ros/jazzy/setup.bash
+          colcon build --packages-up-to elrs_joy_crsf_node kvn_status kvn_video_streamer kvn_robot_bringup
+          colcon test --packages-select elrs_joy_crsf_protocol elrs_joy_crsf_node kvn_status kvn_video_streamer
+          colcon test-result --verbose
+
+  rust:
+    name: cargo test (crates)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - uses: dtolnay/rust-toolchain@stable
+      - name: C++ toolchain
+        run: sudo apt-get update && sudo apt-get install -y g++
+      - run: cargo test --workspace --locked
+      # evdev reader against a uinput virtual gamepad (real kernel input path)
+      - name: uinput evdev test
+        run: |
+          sudo modprobe uinput || true
+          if [ -e /dev/uinput ]; then
+            sudo chmod 666 /dev/uinput
+            RC_TEST_UINPUT=1 cargo test -p control_daemon --test evdev -- --nocapture
+          else
+            echo "::warning::no /dev/uinput on this runner: evdev test skipped"
+          fi
+
+  fuzz:
+    name: cargo fuzz (2 min)
+    runs-on: ubuntu-24.04
+    defaults: { run: { working-directory: crates/elrs_crsf_sys } }
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - uses: dtolnay/rust-toolchain@nightly
+      - run: sudo apt-get update && sudo apt-get install -y clang
+      - run: cargo install cargo-fuzz --locked
+      - name: Seed corpus from the golden frames
+        run: |
+          mkdir -p corpus
+          for f in ../../deps/elrs_joy/elrs_joy_crsf_protocol/test/fixtures/*.hex; do
+            grep -v '^#' "$f" | xxd -r -p > "corpus/$(basename "${f%.hex}").bin"
+          done
+      - run: cargo fuzz run parser_feed corpus -- -max_total_time=120 -max_len=512
+
+  cross:
+    name: aarch64 cross-build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: aarch64-unknown-linux-gnu }
+      - run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+      - run: cargo build --release --locked --target aarch64-unknown-linux-gnu -p control_daemon -p test_tools
+      - uses: actions/upload-artifact@v4
+        with:
+          name: handheld-aarch64
+          path: |
+            target/aarch64-unknown-linux-gnu/release/control_daemon
+            target/aarch64-unknown-linux-gnu/release/ctl
+            target/aarch64-unknown-linux-gnu/release/fake_tx
+            target/aarch64-unknown-linux-gnu/release/virtual_pad
+
+  ui:
+    name: UI build and tests (offscreen)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake qt6-base-dev qt6-declarative-dev \
+            qt6-multimedia-dev qt6-declarative-dev-tools qml6-module-qtquick \
+            qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtquick-window
+      - run: cmake -S ui -B build -G Ninja -DRC_UI_WEBENGINE=OFF -DRC_UI_SOUND=OFF
+      - run: cmake --build build
+      - run: ctest --test-dir build --output-on-failure
+        env: { QT_QPA_PLATFORM: offscreen }
+
+  scripts:
+    name: units, scripts
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - name: systemd units
+        run: |
+          sudo touch /usr/local/bin/control_daemon /usr/local/bin/rc_ui && sudo chmod +x /usr/local/bin/*
+          systemd-analyze verify systemd/*.service deps/kvn-robot/kvn_robot_bringup/systemd/*.service 2>&1 | grep -v -E 'user.slice|cgroup' || true
+      - name: Python scripts compile
+        run: python3 -m py_compile ui/tools/*.py crates/test_tools/scripts/*.py deps/elrs_joy/elrs_joy_crsf_protocol/test/fixtures/generate.py deps/kvn-robot/kvn_robot_bringup/scripts/joy_cmdvel_jitter.py
