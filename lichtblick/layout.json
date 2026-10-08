@@ -1,0 +1,48 @@
+{
+  "configById": {
+    "Image!video01": {
+      "imageMode": {
+        "imageTopic": "/video/compressed"
+      },
+      "synchronize": false
+    },
+    "Plot!plot01": {
+      "paths": [
+        {
+          "value": "/odom.twist.twist.linear.x",
+          "label": "speed x [m/s]",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "color": "#7fd4e8"
+        },
+        {
+          "value": "/battery_state.voltage",
+          "label": "battery [V]",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "color": "#f2b13b"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": false,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 30,
+      "sidebarDimension": 0
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "playbackConfig": {
+    "speed": 1
+  },
+  "layout": {
+    "first": "Image!video01",
+    "second": "Plot!plot01",
+    "direction": "column",
+    "splitPercentage": 70
+  }
+}
