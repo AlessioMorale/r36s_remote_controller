@@ -253,6 +253,8 @@ Also verified: forcing H.264 (`video-caps="video/x-h264"` on the sink, `video-co
 
 Target versions: the robot runs ROS Lyrical on Ubuntu 26.04 (GStreamer 1.28.2, no packaged `webrtcsink`), the handheld Ubuntu 24.04 (GStreamer 1.24.2). `gst-plugins-rs` 0.15 builds on 26.04 (about 10 minutes the first time, with `rustup`; scripts `build_plugins_resolute.sh`). Cross-version test, two containers over a Docker network, 26.04 + plugin 0.15 sender and 24.04 + plugin 0.13 receiver, H.264 forced, `tc netem` 5% loss + 40 ms on both ends (27 packets dropped on the receiver side): 15 fps, 0 dropped frames, no errors (`cross_robot.sh`, `cross_handheld.sh`). The plugin builds are separate per distro; the two ends run different plugin versions.
 
+Robot side (kvn-robot repo, commit 56aa295): `kvn_video_streamer` has an optional WebRTC branch (`webrtc.enabled`), tested in a `ros:lyrical-ros-base-resolute` container with the 0.15 plugins: 28 tests pass, 0 skipped. They include the valve gating of the Foxglove branch and the fallback when WebRTC fails (no signalling server: Foxglove still streams, no pipeline crash loop; WebRTC retried every 10 s while no Foxglove viewer is connected). With the node running, a `webrtcsrc` viewer got 15 fps while `ros2 topic hz /video/compressed` also read 15 Hz. New `kvn-webrtc-signalling.service`, nftables rule for TCP 8443 on `zt*` (syntax checked with `nft -c`). The systemd units were not started on a real robot.
+
 Not verified:
 
 * Latency (no glass-to-glass measurement), whether the sent bitrate actually adapts (only the controller's log lines were seen), and the jitter-buffer setting for teleop.

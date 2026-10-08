@@ -395,6 +395,7 @@ The robot-side packages (`kvn_status`, `kvn_video_streamer`, `kvn_robot_bringup`
   * `topic_whitelist` limited to the layout's topics.
   * A bounded `send_buffer_limit`.
 * **Video streamer** (new; working name `kvn_video_streamer`): publishes scaled, frame-rate-reduced H.264 as `foxglove_msgs/CompressedVideo` (`format: "h264"`), which Lichtblick plays natively.
+  * Optional WebRTC branch (`webrtcsink`, gst-plugins-rs) for the handheld's native video view, independent of Lichtblick: congestion control and loss recovery over UDP; the Foxglove path stays as is. See `docs/results.md`, "WebRTC spike".
   * **Pipeline**: camera frames → scale to the handheld's display (baseline 640x480 or lower) → drop frames to the target rate (baseline 15 fps) → H.264 encode.
   * **Encoder**: hardware encoder on the robot's SoC if available. Otherwise software with low-latency settings (x264 `ultrafast`/`zerolatency`).
   * **Stream constraints**:
