@@ -239,6 +239,24 @@ A1–A5 not started: they run on the target hardware with the provisioned image.
 
 ---
 
+## WebRTC spike (gst-plugins-rs `webrtcsink` / `webrtcsrc`) — Partly
+
+Question: can video go straight to the handheld over WebRTC instead of through `foxglove_bridge` and Lichtblick. Scripts in `tools/webrtc_spike/`.
+
+Verified (Ubuntu 24.04 aarch64 container, GStreamer 1.24.2, gst-plugins-rs 0.13.7):
+
+* Ubuntu has no package for these plugins. They build from source in about 4 minutes; the signalling server takes 40 s more.
+* `videotestsrc` 640x480 at 15 fps through `webrtcsink`, the signalling server and `webrtcsrc` plays at 15 fps with 0 dropped frames and no errors for 25 s, with no STUN server reachable (host candidates only).
+* With `tc netem` on loopback, confirmed by the qdisc drop counters (15, 60 and 154 packets dropped), the stream kept 14-15 fps and 0 dropped frames at 2% loss + 20 ms, 5% + 40 ms and 10% + 60 ms. The homegrown congestion controller was active (increase and decrease steps in its log).
+
+Not verified:
+
+* Latency (no glass-to-glass measurement), whether the bitrate adapts as intended (only the controller's log lines were seen), and the jitter-buffer setting for teleop.
+* Which codec was negotiated. The target is H.264 for the Hantro decoder (`video-caps`, `video-codecs=H264` to be forced).
+* Bitrate control only works when `webrtcsink` runs the encoder itself, and the log says "Bitrate handling is not supported yet for x265enc". Whether it supports `v4l2h264enc` on the robot is unchecked; with a pre-encoded input there is no bitrate control.
+* The R36S side: `webrtcsrc` on the handheld image, hardware decode, CPU and RAM.
+* Integration into `kvn_video_streamer` and the Qt UI.
+
 ## Fuzz run (T2.2)
 
 `cargo fuzz run parser_feed`, 600 s, max input 512 bytes, seeded with the 15 fixtures,
