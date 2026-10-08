@@ -249,11 +249,13 @@ Verified (Ubuntu 24.04 aarch64 container, GStreamer 1.24.2, gst-plugins-rs 0.13.
 * `videotestsrc` 640x480 at 15 fps through `webrtcsink`, the signalling server and `webrtcsrc` plays at 15 fps with 0 dropped frames and no errors for 25 s, with no STUN server reachable (host candidates only).
 * With `tc netem` on loopback, confirmed by the qdisc drop counters (15, 60 and 154 packets dropped), the stream kept 14-15 fps and 0 dropped frames at 2% loss + 20 ms, 5% + 40 ms and 10% + 60 ms. The homegrown congestion controller was active (increase and decrease steps in its log).
 
+Also verified: forcing H.264 (`video-caps="video/x-h264"` on the sink, `video-codecs="<H264>"` on the source) negotiates H.264 and decodes with `avdec_h264`; 14.8 fps, 0 dropped, at 5% loss + 40 ms. Software `x264enc` + `webrtcbin` took about 20% of one core on the sender and about 5% on the receiver, measured on a laptop VM core, far faster than the robot or the R36S, so not a budget figure.
+
 Not verified:
 
 * Latency (no glass-to-glass measurement), whether the bitrate adapts as intended (only the controller's log lines were seen), and the jitter-buffer setting for teleop.
-* Which codec was negotiated. The target is H.264 for the Hantro decoder (`video-caps`, `video-codecs=H264` to be forced).
-* Bitrate control only works when `webrtcsink` runs the encoder itself, and the log says "Bitrate handling is not supported yet for x265enc". Whether it supports `v4l2h264enc` on the robot is unchecked; with a pre-encoded input there is no bitrate control.
+* Bitrate adaptation as seen on the wire, and the jitter-buffer setting for teleop.
+* The robot's SoC and its encoder. In gst-plugins-rs 0.13.7 `webrtcsink` adapts the bitrate only for `x264enc`, `openh264enc`, `vp8enc`/`vp9enc`, `nvh264enc`, `vaapih264enc`, `qsvh264enc`, `nvv4l2h264enc` and `vpuenc_h264`. It does not for the generic `v4l2h264enc` or `mpph264enc` ("Bitrate handling is not supported yet"), so on those the choice is software x264, a small patch to the plugin, or a fixed bitrate with a pre-encoded input.
 * The R36S side: `webrtcsrc` on the handheld image, hardware decode, CPU and RAM.
 * Integration into `kvn_video_streamer` and the Qt UI.
 
