@@ -1,0 +1,36 @@
+[package]
+name = "test_tools"
+description = "Fake ELRS TX module (pty) and virtual R36S gamepad (uinput) for tests and CI"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "fake_tx"
+path = "src/bin/fake_tx.rs"
+
+[[bin]]
+name = "crsf_capture"
+path = "src/bin/crsf_capture.rs"
+
+[[bin]]
+name = "virtual_pad"
+path = "src/bin/virtual_pad.rs"
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+elrs_crsf = { path = "../elrs_crsf" }
+libc.workspace = true
+log.workspace = true
+env_logger.workspace = true
+nix = { workspace = true, features = ["term", "fs", "poll"] }
+serde.workspace = true
+serde_json.workspace = true
+serialport.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+evdev = "0.13"

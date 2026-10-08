@@ -3,6 +3,8 @@ resolver = "2"
 members = [
     "crates/elrs_crsf_sys",
     "crates/elrs_crsf",
+    "crates/control_daemon",
+    "crates/test_tools",
 ]
 
 [workspace.package]

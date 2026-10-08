@@ -1,0 +1,68 @@
+# R36S gamepad -> CRSF channels (design §5.1, AETR, mode 2).
+#
+#   ch0 aileron  = right stick X   (right = 2000 us)    robot yaw
+#   ch1 elevator = right stick Y   (up = 2000 us)       robot linear x
+#   ch2 throttle = left stick Y    (self-centering)     unused by the robot
+#   ch3 rudder   = left stick X                         unused by the robot
+#   ch4 AUX1     = armed && deadman held                (safety state machine, never a stick)
+#   ch5 AUX2     = turbo toggle
+#   ch6-7        = spare, low
+#
+# Axis ranges are placeholders: run "Calibrate sticks" from the menu on the device (T3.3).
+# The calibration file (daemon.toml input.calibration) overrides min/center/max.
+# Event names: evtest on the device lists them. Numbers (decimal or 0x..) also work.
+
+aux_low_us = 1000
+aux_high_us = 2000
+neutral_tolerance = 0.1
+
+[[axes]]
+channel = 0
+source = "ABS_RX"
+min = -1800
+center = 0
+max = 1800
+deadzone = 0.05
+invert = false
+
+[[axes]]
+channel = 1
+source = "ABS_RY"
+min = -1800
+center = 0
+max = 1800
+deadzone = 0.05
+invert = true      # evdev Y grows downwards
+
+[[axes]]
+channel = 2
+source = "ABS_Y"
+min = -1800
+center = 0
+max = 1800
+deadzone = 0.05
+invert = true
+
+[[axes]]
+channel = 3
+source = "ABS_X"
+min = -1800
+center = 0
+max = 1800
+deadzone = 0.05
+invert = false
+
+[buttons]
+arm = "BTN_TL"          # L1
+deadman = "BTN_TR"      # R1
+turbo = "BTN_TR2"       # R2
+menu = "BTN_SELECT"
+up = "BTN_DPAD_UP"      # use "ABS_HAT0Y-" if the D-pad reports as a hat
+down = "BTN_DPAD_DOWN"
+left = "BTN_DPAD_LEFT"
+right = "BTN_DPAD_RIGHT"
+a = "BTN_EAST"
+b = "BTN_SOUTH"
+x = "BTN_NORTH"
+y = "BTN_WEST"
+start = "BTN_START"
