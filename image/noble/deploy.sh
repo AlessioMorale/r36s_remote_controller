@@ -33,7 +33,9 @@ if [ "$build" = 1 ]; then "$here/build.sh" "$dist"; fi
 
 copy_dist() { # /tmp is cleared by a reboot, so this runs before every pass
   echo "== copying $dist to $target:/tmp/rc-dist"
-  cp "$here/provision.sh" "$dist/provision.sh"   # always the current script, not the one from build time
+  # Always the current script, units and rules, not the ones from build time
+  cp "$here/provision.sh" "$dist/provision.sh"
+  cp "$root"/systemd/*.service "$root"/systemd/*.rules "$dist/systemd/"
   remote 'rm -rf /tmp/rc-dist && mkdir -p /tmp/rc-dist'
   COPYFILE_DISABLE=1 tar -C "$dist" -cf - . | remote 'tar -C /tmp/rc-dist -xf -'
 }

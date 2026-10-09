@@ -4,7 +4,9 @@ Documentation=file:///opt/kvn_remote_control/docs/design.md
 # Wants, not Requires/BindsTo: the UI dying must never stop the daemon, and the daemon
 # restarting must not stop the UI (the UI reconnects by itself). No network ordering (R3).
 Wants=rc-control-daemon.service
-After=rc-control-daemon.service systemd-udevd.service
+# plymouth (the boot splash) owns the display until it quits; the UI must start after that or its
+# one attempt to become DRM master fails (EACCES, text console stays up).
+After=rc-control-daemon.service systemd-udevd.service plymouth-quit.service plymouth-quit-wait.service
 # Restart forever: never give up after a burst of crashes
 StartLimitIntervalSec=0
 
@@ -21,6 +23,8 @@ Environment=XDG_RUNTIME_DIR=/run/rc-ui
 # gst-plugins-rs (webrtcsrc) for the native WebRTC video view; see docs/ui.md
 Environment=GST_PLUGIN_PATH=/opt/kvn_remote_control/gst-rs/lib/gstreamer-1.0
 Environment="QTWEBENGINE_CHROMIUM_FLAGS=--no-sandbox --ignore-gpu-blocklist --enable-gpu-rasterization"
+# Belt and braces: make sure plymouth is gone (the leading "-" ignores "not running")
+ExecStartPre=-/usr/bin/plymouth quit --wait
 ExecStart=/opt/kvn_remote_control/bin/rc_ui --config /etc/rc/ui.json
 Restart=always
 RestartSec=500ms

@@ -255,7 +255,7 @@ Problems found and fixed on the way:
 
 * `parted` refuses to resize a mounted partition non-interactively (the script now uses `sfdisk`).
 * `/tmp` is cleared by a reboot, so `deploy.sh` copies the files before every pass.
-* The UI showed only the text console: `rc` is not the first opener of `/dev/dri/card0` (plymouth is), so setting DRM master failed with EACCES; `rc-ui.service` now has `AmbientCapabilities=CAP_SYS_ADMIN`.
+* The UI showed only the text console: `rc` is not the first opener of `/dev/dri/card0` (plymouth is), so setting DRM master failed with EACCES; `rc-ui.service` now has `AmbientCapabilities=CAP_SYS_ADMIN`. That was not enough at boot: the UI started while plymouth still held the display and never retried, so it worked after a manual restart but not after a reboot. The unit is now ordered after `plymouth-quit.service` and `plymouth-quit-wait.service` and runs `plymouth quit --wait` first; after that, a real reboot gave `master y` and no atomic-commit errors.
 * The UI's `Theme` and `Fmt` singletons were undefined: Qt 6.4 does not embed a module `qmldir` for an executable, and the earlier tests had found one next to the build tree. `ui/qml/qmldir` now declares them, and the check is to run the binary alone, outside the build directory.
 
 Not verified:
