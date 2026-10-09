@@ -1,4 +1,5 @@
 import QtQuick
+import RcUi
 
 // Native panel shown where WiFi-fed content (video, plots) would be.
 Rectangle {

@@ -1,4 +1,5 @@
 import QtQuick
+import RcUi
 import RcBackend 1.0
 
 // ELRS link: uplink LQ, RSSI, SNR, TX power (design §3.2 status fields).

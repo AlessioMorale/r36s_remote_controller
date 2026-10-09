@@ -1,4 +1,5 @@
 import QtQuick
+import RcUi
 import RcBackend 1.0
 
 // The WiFi-fed part of the screen (design §3.2.1 option B): video on top

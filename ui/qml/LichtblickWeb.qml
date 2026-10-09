@@ -1,4 +1,5 @@
 import QtQuick
+import RcUi
 import QtWebEngine
 
 // The Lichtblick page (design §3.3, plan T4.5). Only compiled in with

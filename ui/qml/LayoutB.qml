@@ -1,4 +1,5 @@
 import QtQuick
+import RcUi
 import RcBackend 1.0
 
 // Screen layout option B — "Instrument Split" (design §3.2.1, recommended).

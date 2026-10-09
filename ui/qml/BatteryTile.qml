@@ -1,4 +1,5 @@
 import QtQuick
+import RcUi
 import RcBackend 1.0
 
 // Robot battery over ELRS (BATTERY_SENSOR).

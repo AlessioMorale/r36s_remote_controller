@@ -1,4 +1,5 @@
 import QtQuick
+import RcUi
 import RcBackend 1.0
 
 // Full-screen "ELRS link lost" alarm (design §3.2.1 shared states): the robot

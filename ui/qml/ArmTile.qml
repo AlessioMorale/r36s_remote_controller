@@ -1,4 +1,5 @@
 import QtQuick
+import RcUi
 import RcBackend 1.0
 
 // Arm / deadman state as decided by the daemon (design §6). Display only:

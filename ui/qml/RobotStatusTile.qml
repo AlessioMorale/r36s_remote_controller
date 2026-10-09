@@ -1,4 +1,5 @@
 import QtQuick
+import RcUi
 import RcBackend 1.0
 
 // Robot status string over ELRS (FLIGHT_MODE), e.g. RDY, WRN:TEMP, FLT:MOTOR_L.

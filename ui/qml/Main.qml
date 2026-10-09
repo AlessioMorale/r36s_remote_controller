@@ -1,4 +1,5 @@
 import QtQuick
+import RcUi
 import QtQuick.Window
 import RcBackend 1.0
 

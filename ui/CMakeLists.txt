@@ -12,7 +12,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
 find_package(Qt6 6.4 REQUIRED COMPONENTS Core Gui Network Qml Quick)
-find_package(Qt6 QUIET COMPONENTS WebEngineQuick Multimedia Test)
+# One call per optional module: a single call with several components fails as a whole when any
+# of them is missing (e.g. no WebEngine would also hide Multimedia and Test).
+foreach(_rc_mod WebEngineQuick Multimedia Test)
+  find_package(Qt6 QUIET COMPONENTS ${_rc_mod})
+endforeach()
 
 # Optional features default to ON when the Qt module is installed.
 if(Qt6WebEngineQuick_FOUND)
@@ -94,12 +98,18 @@ endif()
 if(QT_KNOWN_POLICY_QTP0004)
   qt_policy(SET QTP0004 NEW)
 endif()
+# Qt 6.4 (Ubuntu noble, the handheld) AOT-compiles the singleton lookups into an endless loop
+# (initLoadSingletonLookup spins at 100% CPU at startup): skip the QML compile cache there.
+if(Qt6_VERSION VERSION_LESS 6.5)
+  set(_rc_qml_opts NO_CACHEGEN)
+endif()
 qt_add_qml_module(rc_ui
   URI RcUi
   VERSION 1.0
   RESOURCE_PREFIX /qt/qml
   QML_FILES ${RC_QML_FILES}
   RESOURCES resources/alarm.wav
+  ${_rc_qml_opts}
 )
 
 if(APPLE)

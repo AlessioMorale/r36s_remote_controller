@@ -1,4 +1,5 @@
 import QtQuick
+import RcUi
 import RcBackend 1.0
 
 // Always-on status bar, drawn natively above everything (design §3.2).

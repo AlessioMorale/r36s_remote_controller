@@ -1,4 +1,5 @@
 import QtQuick
+import RcUi
 import RcBackend 1.0
 
 // Menu overlay (design §3.2 / §3.2.1 shared states). Shown while the daemon

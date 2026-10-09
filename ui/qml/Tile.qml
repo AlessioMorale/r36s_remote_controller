@@ -1,4 +1,5 @@
 import QtQuick
+import RcUi
 import QtQuick.Shapes
 
 // One instrument tile: title, a large value, and up to two detail lines.

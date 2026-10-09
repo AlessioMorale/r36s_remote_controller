@@ -1,4 +1,5 @@
 import QtQuick
+import RcUi
 import RcBackend 1.0
 
 // Loud alarms other than "ELRS link lost" (which takes the whole screen):
