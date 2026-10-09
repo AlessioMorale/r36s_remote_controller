@@ -29,7 +29,9 @@ Rectangle {
     readonly property var rows: buildRows(page, Params.revision, pending, busy, calibrating,
                                           Net.summary, Net.robotReachable, Ipc.connected,
                                           Ipc.daemonVersion, AppConfig.theme)
-    readonly property var row: current >= 0 && current < rows.length ? rows[current] : null
+    // A function, not a binding: as a property its first evaluation pulled in `rows`, whose
+    // onRowsChanged handler writes `current`, which `row` depends on (a binding loop on Qt 6.4).
+    function currentRow() { return current >= 0 && current < rows.length ? rows[current] : null }
 
     // ---------------------------------------------------------------- model
     function section(label) { return { kind: "section", key: "s:" + label, label: label } }
@@ -97,8 +99,13 @@ Rectangle {
         currentKey = focusable(i) ? rows[i].key : ""
     }
 
-    // Keep focus on the same row when the tree is re-sent.
+    // Keep focus on the same row when the tree is re-sent. Ignored until the component is complete:
+    // `rows` is first evaluated from inside another binding (current row, footer text), and writing
+    // `current` there is a binding loop on Qt 6.4. The initial focus is set in onCompleted.
+    property bool ready: false
+    Component.onCompleted: { ready = true; setCurrent(firstFocusable()) }
     onRowsChanged: {
+        if (!ready) return
         for (let i = 0; i < rows.length; ++i)
             if (rows[i].key === currentKey && focusable(i)) { current = i; return }
         setCurrent(firstFocusable())
@@ -157,7 +164,7 @@ Rectangle {
             if (focusable(i)) { setCurrent(i); return }
     }
     function adjust(dir) {
-        const r = row
+        const r = currentRow()
         const base = pending[r.number] !== undefined ? pending[r.number] : Params.param(r.number).value
         const next = Params.stepValue(r.number, base, dir)
         setPending(r.number, next === Params.param(r.number).value ? undefined : next)
@@ -212,7 +219,7 @@ Rectangle {
     }
 
     function handle(button) {
-        const r = row
+        const r = currentRow()
         switch (button) {
         case "up": move(-1); break
         case "down": move(1); break
@@ -346,7 +353,7 @@ Rectangle {
         Text {
             anchors.centerIn: parent
             text: {
-                const r = menu.row
+                const r = menu.currentRow()
                 if (menu.calibrating) return "A save calibration · B cancel"
                 if (r && r.kind === "param")
                     return r.pending ? "A apply · B revert · L/R change" : "L/R change · A apply · B back"
