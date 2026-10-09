@@ -2,11 +2,11 @@
 
 | File | Install to | Purpose |
 |---|---|---|
-| `rc-control-daemon.service` | `/etc/systemd/system/` | The safety-critical daemon: `Restart=always`, real-time, no network dependency |
-| `rc-ui.service` | `/etc/systemd/system/` | The native UI on `eglfs`; independent of the daemon |
-| `99-elrs-tx.rules` | `/etc/udev/rules.d/` | `/dev/elrs_tx` symlink to the internal UART |
+| `rc-control-daemon.service` | linked into `/etc/systemd/system/` | The safety-critical daemon: `Restart=always`, real-time, no network dependency |
+| `rc-ui.service` | linked into `/etc/systemd/system/` | The native UI on `eglfs`; independent of the daemon |
+| `99-elrs-tx.rules` | linked into `/etc/udev/rules.d/` | `/dev/elrs_tx` symlink to the internal UART |
 
-Also needed on the device (the provisioning scripts in `../image/` do all of this):
+All software lives under `/opt/kvn_remote_control` (`bin/`, `gst-rs/`, `systemd/`); the units are attached with `systemctl link`. Also needed on the device (the provisioning scripts in `../image/` do all of this):
 
 ```bash
 useradd --system --create-home --home-dir /var/lib/rc rc

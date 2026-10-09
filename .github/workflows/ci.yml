@@ -110,7 +110,7 @@ jobs:
         with: { submodules: recursive }
       - name: systemd units
         run: |
-          sudo touch /usr/local/bin/control_daemon /usr/local/bin/rc_ui && sudo chmod +x /usr/local/bin/*
+          sudo install -d /opt/kvn_remote_control/bin && sudo touch /opt/kvn_remote_control/bin/control_daemon /opt/kvn_remote_control/bin/rc_ui && sudo chmod +x /opt/kvn_remote_control/bin/*
           systemd-analyze verify systemd/*.service 2>&1 | grep -v -E 'user.slice|cgroup' || true
       - name: Python scripts compile
         run: python3 -m py_compile ui/tools/*.py crates/test_tools/scripts/*.py deps/elrs_joy/elrs_joy_crsf_protocol/test/fixtures/generate.py

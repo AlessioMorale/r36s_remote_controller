@@ -1,6 +1,6 @@
 [Unit]
 Description=Remote controller: native UI (Qt, eglfs)
-Documentation=file:///opt/rc/docs/design.md
+Documentation=file:///opt/kvn_remote_control/docs/design.md
 # Wants, not Requires/BindsTo: the UI dying must never stop the daemon, and the daemon
 # restarting must not stop the UI (the UI reconnects by itself). No network ordering (R3).
 Wants=rc-control-daemon.service
@@ -19,13 +19,18 @@ Environment=QT_QPA_EGLFS_ALWAYS_SET_MODE=1
 Environment=QT_QPA_EGLFS_KMS_ATOMIC=1
 Environment=XDG_RUNTIME_DIR=/run/rc-ui
 # gst-plugins-rs (webrtcsrc) for the native WebRTC video view; see docs/ui.md
-Environment=GST_PLUGIN_PATH=/opt/rc/gst-rs/lib/gstreamer-1.0
+Environment=GST_PLUGIN_PATH=/opt/kvn_remote_control/gst-rs/lib/gstreamer-1.0
 Environment="QTWEBENGINE_CHROMIUM_FLAGS=--no-sandbox --ignore-gpu-blocklist --enable-gpu-rasterization"
-ExecStart=/usr/local/bin/rc_ui --config /etc/rc/ui.json
+ExecStart=/opt/kvn_remote_control/bin/rc_ui --config /etc/rc/ui.json
 Restart=always
 RestartSec=500ms
 RuntimeDirectory=rc-ui
 RuntimeDirectoryMode=0700
+# Becoming DRM master on eglfs needs CAP_SYS_ADMIN unless this process was the first to open the
+# card, and the boot splash (plymouth) always is: without it every atomic commit fails with
+# EACCES and the screen stays on the text console. Nothing else is granted.
+AmbientCapabilities=CAP_SYS_ADMIN
+CapabilityBoundingSet=CAP_SYS_ADMIN
 # WebEngine can balloon; cap it so the daemon and the kernel never starve
 MemoryMax=600M
 OOMScoreAdjust=300

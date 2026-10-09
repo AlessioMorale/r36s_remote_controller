@@ -1,6 +1,6 @@
 [Unit]
 Description=Remote controller: gamepad -> CRSF -> ELRS TX module
-Documentation=file:///opt/rc/docs/design.md
+Documentation=file:///opt/kvn_remote_control/docs/design.md
 # No network ordering on purpose: the daemon must run with no WiFi, VPN or even a network
 # stack (design R3).
 After=systemd-udevd.service
@@ -13,7 +13,7 @@ User=rc
 Group=rc
 # input: evdev gamepad; dialout: the UART behind /dev/elrs_tx
 SupplementaryGroups=input dialout
-ExecStart=/usr/local/bin/control_daemon --config /etc/rc/daemon.toml
+ExecStart=/opt/kvn_remote_control/bin/control_daemon --config /etc/rc/daemon.toml
 # A crash must be back within 2 s, disarmed (plan T0.4: "daemon restart to link re-established")
 Restart=always
 RestartSec=200ms

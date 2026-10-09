@@ -18,7 +18,7 @@ Essential telemetry (right column and bottom bar) comes over ELRS and is the sam
 
 `video.source` in `/etc/rc/ui.json` picks the video: `webrtc` (native view, the robot's `webrtcsink` stream, no plots), `lichtblick` (WebEngine view with video and plots) or `none`. `auto` (default) is `webrtc` when the UI was built with it, else `lichtblick`.
 
-The WebRTC view needs the gst-plugins-rs `webrtcsrc` plugin, which Ubuntu does not package: build it with `tools/webrtc_spike/build_plugins.sh` and install it in `/opt/rc/gst-rs/lib/gstreamer-1.0` (the path `rc-ui.service` sets). It connects to the robot's signalling server (`robot.host:8443`), retries with a backoff of 1 s to 15 s, and shows `CONNECTING VIDEO…` or `VIDEO RESTARTING` with the reason while it has no picture.
+The WebRTC view needs the gst-plugins-rs `webrtcsrc` plugin, which Ubuntu does not package: build it with `tools/webrtc_spike/build_plugins.sh` and install it in `/opt/kvn_remote_control/gst-rs/lib/gstreamer-1.0` (the path `rc-ui.service` sets). It connects to the robot's signalling server (`robot.host:8443`), retries with a backoff of 1 s to 15 s, and shows `CONNECTING VIDEO…` or `VIDEO RESTARTING` with the reason while it has no picture.
 
 ![Live WebRTC video](screenshots/webrtc_video.png)
 

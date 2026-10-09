@@ -22,7 +22,7 @@
 # user has none stored: the UI runs QtWebEngine off-the-record, so that is every start.
 #
 # Runtime URL (built by the UI from config):
-#   file:///opt/lichtblick/index.html?ds=foxglove-websocket&ds.url=ws%3A%2F%2F<robot-zt-ip>%3A8765&openIn=web
+#   file:///opt/kvn_remote_control/lichtblick/index.html?ds=foxglove-websocket&ds.url=ws%3A%2F%2F<robot-zt-ip>%3A8765&openIn=web
 # Needs: git, node >= 20, corepack (ships with node), network access.
 set -euo pipefail
 
@@ -78,4 +78,4 @@ PY
   echo "commit $LICHTBLICK_COMMIT"
   echo "built $(date -u +%Y-%m-%dT%H:%M:%SZ) node $(node -v)"
 } > "$OUT/BUILD_INFO.txt"
-echo "Lichtblick bundle in $OUT (deploy to /opt/lichtblick on the handheld)"
+echo "Lichtblick bundle in $OUT (deploy to /opt/kvn_remote_control/lichtblick on the handheld)"

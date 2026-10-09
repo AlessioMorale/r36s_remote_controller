@@ -20,8 +20,8 @@ apt-get install -y --no-install-recommends \
   qml6-module-qtquick-window qml6-module-qtquick-templates qml6-module-qtmultimedia \
   qml6-module-qtwebengine alsa-utils wpasupplicant iproute2 gstreamer1.0-plugins-good
 
-install -m 0755 "$dist"/bin/control_daemon "$dist"/bin/ctl "$dist"/bin/rc_ui /usr/local/bin/
-install -d /etc/rc /var/lib/rc
+install -d /opt/kvn_remote_control/bin /etc/rc /var/lib/rc
+install -m 0755 "$dist"/bin/control_daemon "$dist"/bin/ctl "$dist"/bin/rc_ui /opt/kvn_remote_control/bin/
 install -m 0644 "$dist"/daemon.toml "$dist"/mapping.toml /etc/rc/
 install -m 0644 "$dist"/rc_ui.json /etc/rc/ui.json
 install -m 0644 "$dist"/systemd/*.service /etc/systemd/system/

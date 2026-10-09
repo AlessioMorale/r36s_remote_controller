@@ -25,13 +25,13 @@ dpkg -i /tmp/zerotier.deb || apt-get install -f -y
 systemctl enable zerotier-one.service
 
 # --- our software ---------------------------------------------------------------------------
-install -m 0755 /tmp/overlay/bin/control_daemon /tmp/overlay/bin/ctl /tmp/overlay/bin/rc_ui /usr/local/bin/
-install -d /etc/rc /var/lib/rc /opt/rc
+install -d /opt/kvn_remote_control/bin /etc/rc /var/lib/rc
+install -m 0755 /tmp/overlay/bin/control_daemon /tmp/overlay/bin/ctl /tmp/overlay/bin/rc_ui /opt/kvn_remote_control/bin/
 install -m 0644 /tmp/overlay/daemon.toml /tmp/overlay/mapping.toml /etc/rc/
 install -m 0644 /tmp/overlay/rc_ui.json /etc/rc/ui.json
 install -m 0644 /tmp/overlay/systemd/*.service /etc/systemd/system/
 install -m 0644 /tmp/overlay/systemd/99-elrs-tx.rules /etc/udev/rules.d/
-[ -d /tmp/overlay/lichtblick ] && cp -r /tmp/overlay/lichtblick /opt/lichtblick
+[ -d /tmp/overlay/lichtblick ] && cp -r /tmp/overlay/lichtblick /opt/kvn_remote_control/lichtblick
 
 id rc >/dev/null 2>&1 || useradd --system --create-home --home-dir /var/lib/rc --shell /usr/sbin/nologin rc
 usermod -aG input,dialout,video,render,audio rc

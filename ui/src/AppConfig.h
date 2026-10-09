@@ -123,7 +123,7 @@ class AppConfig : public QObject {
 
   bool m_lichtblickEnabled = true;
   QString m_lichtblickUrlTemplate = QStringLiteral(
-      "file:///opt/lichtblick/index.html?ds=foxglove-websocket&ds.url=ws%3A%2F%2F{host}%3A{port}&openIn=web");
+      "file:///opt/kvn_remote_control/lichtblick/index.html?ds=foxglove-websocket&ds.url=ws%3A%2F%2F{host}%3A{port}&openIn=web");
   QString m_chromiumFlags;
   int m_lbLoadTimeoutMs = 30000;
   int m_lbPingIntervalMs = 3000;

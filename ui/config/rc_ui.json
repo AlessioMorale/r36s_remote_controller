@@ -19,7 +19,7 @@
   },
   "lichtblick": {
     "enabled": true,
-    "url": "file:///opt/lichtblick/index.html?ds=foxglove-websocket&ds.url=ws%3A%2F%2F{host}%3A{port}&openIn=web",
+    "url": "file:///opt/kvn_remote_control/lichtblick/index.html?ds=foxglove-websocket&ds.url=ws%3A%2F%2F{host}%3A{port}&openIn=web",
     "chromium_flags": "--renderer-process-limit=1 --disable-gpu-shader-disk-cache",
     "load_timeout_ms": 30000,
     "ping_interval_ms": 3000,
