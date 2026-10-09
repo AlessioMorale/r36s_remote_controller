@@ -19,6 +19,12 @@ class AppConfig : public QObject {
   Q_PROPERTY(int lichtblickPingIntervalMs READ lichtblickPingIntervalMs CONSTANT)
   Q_PROPERTY(int lichtblickHangTimeoutMs READ lichtblickHangTimeoutMs CONSTANT)
   Q_PROPERTY(bool webEngineAvailable READ webEngineAvailable CONSTANT)
+  Q_PROPERTY(bool webrtcAvailable READ webrtcAvailable CONSTANT)
+  Q_PROPERTY(QString videoSource READ videoSource CONSTANT)
+  Q_PROPERTY(QString signallerUri READ signallerUri CONSTANT)
+  Q_PROPERTY(QString webrtcStunServer READ webrtcStunServer CONSTANT)
+  Q_PROPERTY(int webrtcStallMs READ webrtcStallMs CONSTANT)
+  Q_PROPERTY(int webrtcConnectTimeoutMs READ webrtcConnectTimeoutMs CONSTANT)
   Q_PROPERTY(bool soundAvailable READ soundAvailable CONSTANT)
   Q_PROPERTY(bool soundEnabled READ soundEnabled CONSTANT)
   Q_PROPERTY(QString layout READ layout CONSTANT)
@@ -64,6 +70,17 @@ class AppConfig : public QObject {
   QString robotNodeId() const { return m_robotNodeId; }
   int netPollMs() const { return m_netPollMs; }
 
+  // "webrtc" (native view fed by the robot's webrtcsink), "lichtblick" or "none". The config value
+  // "auto" resolves to webrtc when built with it, else lichtblick.
+  QString videoSource() const;
+  int signallerPort() const { return m_signallerPort; }
+  QString signallerUri() const;  // ws://host:port
+  QString webrtcStunServer() const { return m_webrtcStun; }
+  int webrtcStallMs() const { return m_webrtcStallMs; }
+  int webrtcConnectTimeoutMs() const { return m_webrtcConnectTimeoutMs; }
+  // Port NetStatus probes: the one the active video source needs.
+  int probePort() const;
+  bool webrtcAvailable() const;
   bool webEngineAvailable() const;
   bool soundAvailable() const;
   bool soundEnabled() const { return m_soundEnabled && soundAvailable(); }
@@ -97,6 +114,12 @@ class AppConfig : public QObject {
   int m_bridgePort = 8765;
   int m_probeIntervalMs = 2000;
   int m_probeTimeoutMs = 1500;
+
+  QString m_videoSource = QStringLiteral("auto");
+  int m_signallerPort = 8443;
+  QString m_webrtcStun;
+  int m_webrtcStallMs = 3000;
+  int m_webrtcConnectTimeoutMs = 10000;
 
   bool m_lichtblickEnabled = true;
   QString m_lichtblickUrlTemplate = QStringLiteral(

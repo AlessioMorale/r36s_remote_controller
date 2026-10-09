@@ -20,6 +20,7 @@
 #include "NetStatus.h"
 #include "ParamModel.h"
 #include "TelemetryModel.h"
+#include "WebrtcVideo.h"
 
 Q_LOGGING_CATEGORY(lcMain, "rc.main")
 
@@ -85,6 +86,7 @@ int main(int argc, char** argv) {
   ParamModel params;
   NetStatus net(cfg);
   HostBattery host;
+  WebrtcVideo webrtc;
 
   QObject::connect(&ipc, &IpcClient::telemetryReceived, &telemetry, &TelemetryModel::update);
   QObject::connect(&ipc, &IpcClient::alarmReceived, &alarms, &AlarmModel::apply);
@@ -118,6 +120,7 @@ int main(int argc, char** argv) {
   qmlRegisterSingletonInstance("RcBackend", 1, 0, "Params", &params);
   qmlRegisterSingletonInstance("RcBackend", 1, 0, "Net", &net);
   qmlRegisterSingletonInstance("RcBackend", 1, 0, "Host", &host);
+  qmlRegisterSingletonInstance("RcBackend", 1, 0, "Webrtc", &webrtc);
 
   QQmlApplicationEngine engine;
   QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed, &app,

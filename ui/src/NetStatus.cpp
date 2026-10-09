@@ -145,7 +145,7 @@ void NetStatus::probe() {
   connect(m_sock, &QTcpSocket::errorOccurred, this, [this] { probeResult(false); });
   m_probeClock.start();
   m_probeTimeout.start();
-  m_sock->connectToHost(m_cfg->robotHost(), quint16(m_cfg->bridgePort()));
+  m_sock->connectToHost(m_cfg->robotHost(), quint16(m_cfg->probePort()));
 }
 
 void NetStatus::probeResult(bool ok) {
@@ -171,7 +171,7 @@ void NetStatus::probeResult(bool ok) {
 }
 
 QString NetStatus::robotEndpoint() const {
-  return QStringLiteral("%1:%2").arg(m_cfg->robotHost()).arg(m_cfg->bridgePort());
+  return QStringLiteral("%1:%2").arg(m_cfg->robotHost()).arg(m_cfg->probePort());
 }
 
 bool NetStatus::degraded() const {

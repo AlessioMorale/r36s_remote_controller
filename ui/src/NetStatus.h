@@ -24,7 +24,7 @@ class AppConfig;
 // * path:  from `zerotier-cli -j peers` for the robot's node id: "direct" when
 //          the peer has an active, non-expired path, "relayed" otherwise;
 //          "unknown" without a node id or zerotier-cli.
-// * robotReachable: TCP connect probe to robot.host:bridge_port; latency is the
+// * robotReachable: TCP connect probe to robot.host and the active video source's port (signaller_port for webrtc, else bridge_port); latency is the
 //          connect time. Goes true on one success, false after two failures.
 class NetStatus : public QObject {
   Q_OBJECT

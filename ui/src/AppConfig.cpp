@@ -63,6 +63,14 @@ void AppConfig::loadFromJson(const QJsonObject& root) {
   m_probeIntervalMs = num(robot, "probe_interval_ms", m_probeIntervalMs);
   m_probeTimeoutMs = num(robot, "probe_timeout_ms", m_probeTimeoutMs);
 
+  m_signallerPort = num(robot, "signaller_port", m_signallerPort);
+
+  const auto video = root.value(QLatin1String("video")).toObject();
+  m_videoSource = str(video, "source", m_videoSource);
+  m_webrtcStun = str(video, "stun_server", m_webrtcStun);
+  m_webrtcStallMs = num(video, "stall_ms", m_webrtcStallMs);
+  m_webrtcConnectTimeoutMs = num(video, "connect_timeout_ms", m_webrtcConnectTimeoutMs);
+
   const auto lb = root.value(QLatin1String("lichtblick")).toObject();
   m_lichtblickEnabled = flag(lb, "enabled", m_lichtblickEnabled);
   m_lichtblickUrlTemplate = str(lb, "url", m_lichtblickUrlTemplate);
@@ -118,6 +126,22 @@ QString AppConfig::lichtblickUrl() const {
   return u;
 }
 
+QString AppConfig::videoSource() const {
+  if (m_videoSource == QLatin1String("none") || m_videoSource == QLatin1String("lichtblick") ||
+      m_videoSource == QLatin1String("webrtc"))
+    return m_videoSource;
+  return webrtcAvailable() ? QStringLiteral("webrtc") : QStringLiteral("lichtblick");
+}
+
+QString AppConfig::signallerUri() const {
+  return QStringLiteral("ws://%1:%2").arg(m_robotHost).arg(m_signallerPort);
+}
+
+int AppConfig::probePort() const {
+  return videoSource() == QLatin1String("webrtc") ? m_signallerPort : m_bridgePort;
+}
+
+bool AppConfig::webrtcAvailable() const { return RC_UI_HAS_WEBRTC; }
 bool AppConfig::webEngineAvailable() const { return RC_UI_HAS_WEBENGINE; }
 bool AppConfig::soundAvailable() const { return RC_UI_HAS_SOUND; }
 QString AppConfig::uiVersion() const { return QStringLiteral(RC_UI_VERSION); }

@@ -7,8 +7,15 @@
   "robot": {
     "host": "10.147.17.10",
     "bridge_port": 8765,
+    "signaller_port": 8443,
     "probe_interval_ms": 2000,
     "probe_timeout_ms": 1500
+  },
+  "video": {
+    "source": "auto",
+    "stun_server": "none",
+    "stall_ms": 3000,
+    "connect_timeout_ms": 10000
   },
   "lichtblick": {
     "enabled": true,

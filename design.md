@@ -324,6 +324,8 @@ block-beta
 
 ### 3.3 Lichtblick View (optional)
 
+Video can instead come from a native WebRTC view (`video.source = "webrtc"`, `docs/ui.md`), which needs no WebEngine; the Lichtblick view below then serves only the plots and is not hosted at the same time.
+
 * A `QWebEngineView` loads a locally hosted static Lichtblick build. It connects to `ws://<robot-zt-ip>:8765` using URL parameters and loads a fixed, minimal layout: a video panel plus a few plots.
 * It runs in a separate process (a QtWebEngine renderer, or a separate helper process if needed). It may crash, hang, or reconnect without affecting the daemon or the native status bar; the native UI restarts it.
 * It is started only when the robot's bridge is reachable, to save RAM and CPU otherwise.

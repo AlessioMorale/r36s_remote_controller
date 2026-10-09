@@ -17,6 +17,10 @@ find_package(Qt6 6.4 REQUIRED COMPONENTS Core Gui Network Qml Quick)
 foreach(_rc_mod WebEngineQuick Multimedia Test)
   find_package(Qt6 QUIET COMPONENTS ${_rc_mod})
 endforeach()
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+  pkg_check_modules(GST QUIET IMPORTED_TARGET gstreamer-1.0 gstreamer-app-1.0 gstreamer-video-1.0)
+endif()
 
 # Optional features default to ON when the Qt module is installed.
 if(Qt6WebEngineQuick_FOUND)
@@ -29,6 +33,12 @@ if(Qt6Multimedia_FOUND)
 else()
   set(_rc_snd_default OFF)
 endif()
+if(Qt6Multimedia_FOUND AND GST_FOUND)
+  set(_rc_rtc_default ON)
+else()
+  set(_rc_rtc_default OFF)
+endif()
+option(RC_UI_WEBRTC "Native WebRTC video view (GStreamer + gst-plugins-rs webrtcsrc at run time)" ${_rc_rtc_default})
 option(RC_UI_WEBENGINE "Host the Lichtblick view through QtWebEngine" ${_rc_we_default})
 option(RC_UI_SOUND "Play the loud-alarm tone through QtMultimedia" ${_rc_snd_default})
 option(RC_UI_TESTS "Build the QtTest unit tests" ON)
@@ -39,7 +49,10 @@ endif()
 if(RC_UI_SOUND AND NOT Qt6Multimedia_FOUND)
   message(FATAL_ERROR "RC_UI_SOUND=ON but Qt6 Multimedia was not found")
 endif()
-message(STATUS "rc_ui: WebEngine=${RC_UI_WEBENGINE} Sound=${RC_UI_SOUND} Tests=${RC_UI_TESTS}")
+if(RC_UI_WEBRTC AND NOT (Qt6Multimedia_FOUND AND GST_FOUND))
+  message(FATAL_ERROR "RC_UI_WEBRTC=ON but Qt6 Multimedia or GStreamer (gstreamer-app/video) was not found")
+endif()
+message(STATUS "rc_ui: WebEngine=${RC_UI_WEBENGINE} Sound=${RC_UI_SOUND} WebRTC=${RC_UI_WEBRTC} Tests=${RC_UI_TESTS}")
 
 # --- Backend library (no QML, unit-testable) -------------------------------
 add_library(rc_ui_backend STATIC
@@ -51,13 +64,22 @@ add_library(rc_ui_backend STATIC
   src/ParamModel.cpp src/ParamModel.h
   src/NetStatus.cpp src/NetStatus.h
   src/HostBattery.cpp src/HostBattery.h
+  src/WebrtcVideo.cpp src/WebrtcVideo.h
 )
 target_include_directories(rc_ui_backend PUBLIC src)
 target_link_libraries(rc_ui_backend PUBLIC Qt6::Core Qt6::Network Qt6::Qml)
+# QVideoSink / QVideoFrame come from Qt Multimedia; WebrtcVideo is a stub without WebRTC.
+if(RC_UI_WEBRTC OR RC_UI_SOUND)
+  target_link_libraries(rc_ui_backend PUBLIC Qt6::Multimedia)
+endif()
+if(RC_UI_WEBRTC)
+  target_link_libraries(rc_ui_backend PUBLIC PkgConfig::GST)
+endif()
 target_compile_definitions(rc_ui_backend PUBLIC
   RC_UI_VERSION="${PROJECT_VERSION}"
   RC_UI_HAS_WEBENGINE=$<BOOL:${RC_UI_WEBENGINE}>
-  RC_UI_HAS_SOUND=$<BOOL:${RC_UI_SOUND}>)
+  RC_UI_HAS_SOUND=$<BOOL:${RC_UI_SOUND}>
+  RC_UI_HAS_WEBRTC=$<BOOL:${RC_UI_WEBRTC}>)
 
 # --- Application -------------------------------------------------------------
 qt_add_executable(rc_ui src/main.cpp)
@@ -94,6 +116,9 @@ endif()
 if(RC_UI_SOUND)
   list(APPEND RC_QML_FILES qml/AlarmSound.qml)
 endif()
+if(RC_UI_WEBRTC)
+  list(APPEND RC_QML_FILES qml/WebrtcView.qml)
+endif()
 
 if(QT_KNOWN_POLICY_QTP0004)
   qt_policy(SET QTP0004 NEW)
@@ -126,4 +151,13 @@ if(RC_UI_TESTS AND Qt6Test_FOUND)
   target_link_libraries(tst_backend PRIVATE rc_ui_backend Qt6::Test)
   add_test(NAME tst_backend COMMAND tst_backend)
   set_tests_properties(tst_backend PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+
+  # Needs QVideoSink (Qt Multimedia). The end-to-end test is skipped unless RC_TEST_SIGNALLING
+  # and GST_PLUGIN_PATH are set (see tools/webrtc_ui_test.sh).
+  if(Qt6Multimedia_FOUND)
+    qt_add_executable(tst_webrtc tests/tst_webrtc.cpp)
+    target_link_libraries(tst_webrtc PRIVATE rc_ui_backend Qt6::Test Qt6::Multimedia)
+    add_test(NAME tst_webrtc COMMAND tst_webrtc)
+    set_tests_properties(tst_webrtc PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 180)
+  endif()
 endif()
