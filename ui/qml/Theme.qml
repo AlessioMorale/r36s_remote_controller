@@ -2,53 +2,77 @@ pragma Singleton
 import QtQuick
 import RcBackend 1.0
 
-// Colors and sizes. Dark is the default; "light" is the high-contrast sunlight
-// palette of design §3.2.1 option C, switchable from the menu.
+// Slamming Works "Night shift" palette: flat fills, no gradients,
+// radius 0, 2px borders. Dark is the default; "light" is the sunlight theme (Paper surfaces,
+// Night text), switchable from the menu.
+//
+// Contrast rules the properties below follow:
+//  - Slam Violet is a fill, never text on Night (3.0:1). Violet text on dark is Ultraviolet.
+//  - Text on a Violet fill is Paper (5.7:1), never Ultraviolet (2.4:1).
+//  - Secondary text is Ultraviolet (dark) or Violet (light), never grey.
+//  - Acid Lime is the one accent per screen: the armed tile on the drive screen, the focus ring
+//    in the menu.
+// The state colors (ok green, warn amber, crit red) are not brand colors: they are safety
+// signals, kept distinct from the palette on purpose.
 QtObject {
     readonly property bool dark: AppConfig.theme !== "light"
 
+    // Brand palette
+    readonly property color violet:      "#9400D3"   // Slam Violet: fills only
+    readonly property color ultraviolet: "#C77DFF"   // violet text and icons on dark
+    readonly property color night:       "#0E0B14"
+    readonly property color paper:       "#F2EFE8"
+    readonly property color lime:        "#C6FF3D"   // Acid Lime: one moment per screen
+
     // Surfaces
-    readonly property color bg:          dark ? "#07090a" : "#e9edef"
-    readonly property color bar:         dark ? "#0e1113" : "#f4f6f7"
-    readonly property color tile:        dark ? "#171c20" : "#ffffff"
-    readonly property color border:      dark ? "#2a3238" : "#c9d1d6"
-    readonly property color video:       dark ? "#1a2126" : "#dfe5e8"
-    readonly property color novid:       dark ? "#161c20" : "#eef1f2"
+    readonly property color bg:          dark ? night : paper
+    readonly property color bar:         violet
+    readonly property color tile:        dark ? night : paper
+    readonly property color border:      dark ? paper : night
+    readonly property color video:       dark ? night : paper
+    readonly property color novid:       dark ? night : paper
 
     // Text
-    readonly property color text:        dark ? "#e8edf0" : "#101418"
-    readonly property color textDim:     dark ? "#9aa6ae" : "#4a555c"
-    readonly property color textMuted:   dark ? "#8c98a0" : "#5b666d"
+    readonly property color text:        dark ? paper : night
+    readonly property color textDim:     dark ? ultraviolet : violet
+    readonly property color textMuted:   dark ? ultraviolet : violet
+    readonly property color onBar:       paper       // text on the Violet status bar
+    readonly property color onFocus:     paper       // text on a Violet focused row
 
     // States
-    readonly property color okFill:      dark ? "#1f3b2e" : "#e3f4ec"
+    readonly property color okFill:      tile
     readonly property color okBorder:    dark ? "#3ddc97" : "#0b7a4b"
-    readonly property color okText:      dark ? "#e8edf0" : "#0b3d27"
-    readonly property color armedFill:   dark ? "#f2b13b" : "#fff1d6"
-    readonly property color armedBorder: dark ? "#f2b13b" : "#a05e00"
-    readonly property color armedText:   dark ? "#1b1306" : "#3d2400"
-    readonly property color warn:        dark ? "#f2b13b" : "#a05e00"
-    readonly property color warnFill:    dark ? "#3a2c10" : "#fff1d6"
+    readonly property color okText:      text
+    readonly property color armedFill:   lime
+    readonly property color armedBorder: dark ? lime : night
+    readonly property color armedText:   night
+    readonly property color warn:        dark ? "#f2b13b" : "#8a4f00"
+    readonly property color warnFill:    tile
     readonly property color crit:        "#c42b1c"
-    readonly property color critBorder:  "#ff5a4e"
-    readonly property color critText:    "#ffffff"
+    readonly property color critBorder:  paper
+    readonly property color critText:    paper
     readonly property color critOnTile:  dark ? "#ff6b5e" : "#b3261e"
-    readonly property color staleFill:   dark ? "#22292e" : "#e4e8ea"
-    readonly property color staleText:   dark ? "#8c98a0" : "#5b666d"
-    readonly property color quiet:       dark ? "#9aa6ae" : "#4a555c"
-    readonly property color quietWarn:   dark ? "#c9a25a" : "#7a5a1c"
+    readonly property color staleFill:   tile
+    readonly property color staleText:   dark ? ultraviolet : violet
 
     // Menu
-    readonly property color menuHeader:     "#f2b13b"
-    readonly property color menuHeaderText: "#1b1306"
-    readonly property color focusFill:   dark ? "#1d3a44" : "#d6eef5"
-    readonly property color focusBorder: dark ? "#7fd4e8" : "#0a6f88"
-    readonly property color accent:      dark ? "#7fd4e8" : "#0a6f88"
+    readonly property color menuHeader:     night
+    readonly property color menuHeaderText: paper
+    readonly property color focusFill:   violet
+    readonly property color focusBorder: dark ? lime : night
+    readonly property color accent:      dark ? ultraviolet : violet
 
-    // Typography (pixel sizes; 640x480 at ~3.5": 1 px ≈ 0.11 mm)
-    readonly property string font: AppConfig.fontFamily
+    // Geometry (radius 0, 2px borders)
+    readonly property int borderW: 2
+
+    // Typography (pixel sizes; 640x480 at ~3.5": 1 px ≈ 0.11 mm).
+    // Headings and big values: Archivo Black. Body: IBM Plex Sans. Small labels: IBM Plex Mono.
+    // All three are bundled (resources/fonts, SIL OFL). ui.font_family overrides the body face.
+    readonly property string display: "Archivo Black"
+    readonly property string font: AppConfig.fontFamily !== "" ? AppConfig.fontFamily : "IBM Plex Sans"
+    readonly property string mono: "IBM Plex Mono"
     readonly property int fsTitle: 13
-    readonly property int fsBig: 30
+    readonly property int fsBig: 28
     readonly property int fsMed: 17
     readonly property int fsSmall: 14
     readonly property int fsBar: 15

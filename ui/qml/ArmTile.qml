@@ -10,17 +10,17 @@ Tile {
     readonly property bool hasData: Fmt.has(a.state)
     readonly property bool menu: Telemetry.menuMode
 
-    title: "DRIVE"
+    title: "Drive"
     value: !hasData ? Fmt.none
-         : a.state === "armed" ? "ARMED"
-         : a.state === "arming" ? "ARMING…"
-         : "DISARMED"
+         : a.state === "armed" ? "Armed"
+         : a.state === "arming" ? "Arming…"
+         : "Disarmed"
     sub1: !hasData ? ""
-        : menu ? "menu open · neutral"
+        : menu ? "Menu open, sticks neutral"
         : a.state === "armed" ? (a.deadman ? "R1 held" : "R1 released")
         : a.state === "arming" ? "keep L1+R1 held"
-        : "L1+R1 1 s to arm"
-    sub2: hasData ? "AUX1 " + (a.aux1 ? "HIGH" : "low") : ""
+        : "Hold L1+R1 1 s to arm"
+    sub2: hasData ? "AUX1 " + (a.aux1 ? "high" : "low") : ""
     stale: hasData && !Telemetry.fresh
     tileState: !hasData ? "nodata" : (a.state === "armed" || a.state === "arming") ? "armed" : "normal"
 

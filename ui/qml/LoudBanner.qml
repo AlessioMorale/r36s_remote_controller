@@ -11,16 +11,17 @@ Rectangle {
     property var alarms: []   // [{id, level, message}]
     visible: alarms.length > 0
     height: col.implicitHeight + 20
+    radius: 0
     color: Theme.crit
     border.color: Theme.critBorder
-    border.width: 3
+    border.width: Theme.borderW
 
     function detail(a) {
         switch (a.id) {
-        case "elrs_degraded": return "LQ " + (Fmt.has(Telemetry.link.lq) ? Telemetry.link.lq + "%" : Fmt.none) + " · move closer, check antenna"
-        case "serial_error": return "TX module UART failed · check module power and wiring"
-        case "input_lost": return "gamepad lost · daemon disarmed"
-        case "ui_daemon_lost": return "no telemetry · robot will failsafe-stop"
+        case "elrs_degraded": return "Link quality " + (Fmt.has(Telemetry.link.lq) ? Telemetry.link.lq + "%" : Fmt.none) + ", move closer and check the antenna"
+        case "serial_error": return "TX module UART failed: check module power and wiring"
+        case "input_lost": return "Gamepad lost, daemon disarmed"
+        case "ui_daemon_lost": return "No telemetry, the robot will failsafe-stop"
         default: return ""
         }
     }
@@ -37,11 +38,10 @@ Rectangle {
                 spacing: 0
                 Text {
                     width: parent.width
-                    text: "⚠ " + String(modelData.message).toUpperCase()
+                    text: String(modelData.message)
                     color: Theme.critText
-                    font.family: Theme.font
-                    font.pixelSize: 24
-                    font.bold: true
+                    font.family: Theme.display
+                    font.pixelSize: 22
                     elide: Text.ElideRight
                 }
                 Text {

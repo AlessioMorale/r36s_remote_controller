@@ -7,7 +7,7 @@ Tile {
     readonly property var b: Telemetry.battery
     readonly property bool hasData: Fmt.has(b.voltage)
 
-    title: "ROBOT BATT"
+    title: "Robot batt"
     value: Fmt.num(b.voltage, 1, "V")
     sub1: (Fmt.has(b.percent) ? b.percent + "%" : Fmt.none) + " · " + Fmt.num(b.current, 1, "A")
     sub2: Fmt.has(b.used_mah) ? b.used_mah + " mAh used" : ""

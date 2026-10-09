@@ -10,12 +10,12 @@ Tile {
     readonly property bool degraded: Alarms.activeIds.indexOf("elrs_degraded") >= 0
     readonly property bool lost: Alarms.elrsLost
 
-    title: "LINK"
+    title: "Link"
     value: hasData ? "LQ " + l.lq + "%" : "LQ " + Fmt.none
     sub1: Fmt.num(l.rssi_dbm, 0, "dBm") + " · " + Fmt.num(l.snr_db, 0, "dB")
     sub2: {
         let s = "TX " + Fmt.num(l.tx_power_mw, 0, "mW")
-        if (Fmt.has(tx.serial_open) && !tx.serial_open) s += " · UART ✕"
+        if (Fmt.has(tx.serial_open) && !tx.serial_open) s += " · UART failed"
         else if (Fmt.has(tx.synced) && !tx.synced) s += " · no sync"
         return s
     }

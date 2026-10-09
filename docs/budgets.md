@@ -7,11 +7,11 @@ with, then fill in the sign-off line. A4 measures every metric against it.
 |---|---|---|---|
 | Input-to-UART latency (evdev event → CRSF frame written), p99 | ≤ 10 ms | daemon trace timestamps | `ctl state` → `tx.input_latency_p99_us` |
 | CRSF frame period jitter at the handheld UART, p99 | ≤ 0.5 ms | logic analyzer on UART TX | `tx.period_jitter_p99_us` (software view, includes scheduler wake-up only) |
-| Robot `/joy` → `/cmd_vel` period jitter with bridge and video at full load, p99 | ≤ 5 ms | rosbag timestamps, `kvn_robot_bringup/scripts/joy_cmdvel_jitter.py` | — |
-| Robot stop after ELRS loss | ≤ `failsafe_timeout_ms` (300) + 50 ms | rosbag | — |
-| Video glass-to-glass latency, direct VPN path, median | ≤ 250 ms | phone video of a millisecond clock | — |
-| Handheld RAM used, with Lichtblick running | ≤ 700 MB | `free -m` | — |
-| Handheld boot to "ready to arm" | ≤ 30 s | `systemd-analyze`, stopwatch | — |
+| Robot `/joy` → `/cmd_vel` period jitter with bridge and video at full load, p99 | ≤ 5 ms | rosbag timestamps, `kvn_robot_bringup/scripts/joy_cmdvel_jitter.py` | n/a |
+| Robot stop after ELRS loss | ≤ `failsafe_timeout_ms` (300) + 50 ms | rosbag | n/a |
+| Video glass-to-glass latency, direct VPN path, median | ≤ 250 ms | phone video of a millisecond clock | n/a |
+| Handheld RAM used, with Lichtblick running | ≤ 700 MB | `free -m` | n/a |
+| Handheld boot to "ready to arm" | ≤ 30 s | `systemd-analyze`, stopwatch | n/a |
 | Daemon restart to link re-established | ≤ 2 s | `kill -9`, frames seen at the module | `rc-control-daemon.service` `RestartSec=200ms` |
 | ELRS "link lost" alarm after TX module power loss | ≤ 1 s | scope + stopwatch | `link_stale_ms = 800` in `daemon.toml`; verified by test |
 

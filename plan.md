@@ -1,4 +1,4 @@
-# Remote Controller — Development Plan
+# Remote Controller: Development Plan
 
 Implements [design.md](design.md). The order puts the riskiest assumptions first (handheld platform, Lichtblick feasibility). It then gets the ELRS-only system working end to end before any WiFi feature is added, because the ELRS-only system is already a complete product (design §1).
 
@@ -68,12 +68,12 @@ Phase 2 does not depend on the platform spike and can run in parallel with Phase
 ## Phase 0: Hardware and Decisions
 
 ### T0.1 Fix the turbo-button mapping
-* **Depends on**: —
+* **Depends on**: none
 * **Deliverables**: `teleop.yaml` with `enable_turbo_button` and the header comments consistent (AUX2 = `buttons[1]`). Remove the inconsistency note in design §5.1.
 * **Verify**: On the robot, with the existing RC handset, AUX2 high gives turbo scaling on `/cmd_vel` (`ros2 topic echo /cmd_vel` shows a speed of 2.0 instead of 1.0 at full stick), and AUX4 has no effect.
 
 ### T0.2 Wire the TX module to the internal UART
-* **Depends on**: —
+* **Depends on**: none
 * **Deliverables**:
   * `docs/hardware.md`: UART2 pad locations (photo), wiring diagram (Mermaid), TX module model and firmware version, power source.
   * The module's handset UART baud set to 921600.
@@ -83,12 +83,12 @@ Phase 2 does not depend on the platform spike and can run in parallel with Phase
   * Supply voltage at the module stays within spec while transmitting at the maximum planned RF power (multimeter or scope; record the minimum voltage).
 
 ### T0.3 Choose the robot camera chain
-* **Depends on**: —
+* **Depends on**: none
 * **Deliverables**: `docs/hardware.md` section listing camera, driver, native modes, and encoder (hardware or x264), with the reasoning.
 * **Verify**: On the robot, a GStreamer or FFmpeg command line captures from the camera and produces an H.264 file at 640x480, 15 fps, with no B-frames and a 1 s GOP. `ffprobe` confirms the profile, `has_b_frames=0`, and the keyframe interval. Record the encoder's CPU usage.
 
 ### T0.4 Set acceptance budgets
-* **Depends on**: —
+* **Depends on**: none
 * **Deliverables**: `docs/budgets.md`, with the proposed values below confirmed or changed:
 
   | Metric | Proposed budget |
@@ -104,17 +104,17 @@ Phase 2 does not depend on the platform spike and can run in parallel with Phase
 * **Verify**: The table is reviewed and signed off (name and date recorded in `docs/budgets.md`).
 
 ### T0.5 Identify board revision and panel
-* **Depends on**: —
+* **Depends on**: none
 * **Deliverables**: `docs/hardware.md` entry with the board silkscreen (photo), panel ID, and support status in both OS candidates (design §9.1).
 * **Verify**: The board and panel appear in at least one candidate's support list. If neither lists them, raise the issue before Phase 1.
 
 ### T0.6 Choose the WiFi dongle
-* **Depends on**: —
+* **Depends on**: none
 * **Deliverables**: `docs/hardware.md` entry with the dongle model, chipset, and its in-kernel driver name for both candidate kernels.
 * **Verify**: On a Linux PC, the dongle works with the in-tree driver (`lsusb`, `ip link`, joins the test access point).
 
 ### T0.7 Choose the screen layout
-* **Depends on**: —
+* **Depends on**: none
 * **Deliverables**: Design §3.2.1 updated with the chosen option (A, B, or C) and the reason, and the other options moved under a "Rejected options" heading. Theme decided: dark, light, or switchable.
 * **Verify**: The choice is recorded in `docs/results.md` with name and date. T3.8 builds against it.
 
@@ -201,7 +201,7 @@ Phase 2 does not depend on the platform spike and can run in parallel with Phase
 Independent of Phase 1; can run in parallel.
 
 ### T2.1 CRSF library: handset-role extensions
-* **Depends on**: —
+* **Depends on**: none
 * **Deliverables**: Changes in `deps/elrs_joy/elrs_joy_crsf_protocol`:
   * `0xEA` accepted in `Packets::VALID_SYNC_BYTES`.
   * `OpenTxSyncPayload` and message, with a deserializer.
@@ -235,7 +235,7 @@ Independent of Phase 1; can run in parallel.
   * On hardware, a stock EdgeTX handset shows the string as the flight mode, with `ros2 topic pub /robot_status std_msgs/String "data: RDY"` changing it within 1 s.
 
 ### T2.4 Status node
-* **Depends on**: —
+* **Depends on**: none
 * **Deliverables**: The `kvn_status` package:
   * the node; the configurable input list with staleness timeouts in yaml
   * the pure reduction function with unit tests
@@ -283,7 +283,7 @@ Independent of Phase 1; can run in parallel.
   * While the daemon holds the grab, `evtest` sees no events (the grab is exclusive).
 
 ### T3.4 Safety state machine
-* **Depends on**: —
+* **Depends on**: none
 * **Deliverables**: A pure state-machine module (no I/O) implementing design §6 (startup, arm, deadman, disarm, menu-forces-neutral, override bounds and expiry), wired into the TX loop.
 * **Verify**: Unit tests, at least one per rule:
   * starts disarmed; refuses to arm with sticks off-centre
@@ -364,7 +364,7 @@ Independent of Phase 1; can run in parallel.
 ## Phase 4: WiFi Enhancement (optional link)
 
 ### T4.1 Bridge hardening
-* **Depends on**: —
+* **Depends on**: none
 * **Deliverables**: `kvn_foxglove_bridge.launch.py` with:
   * `capabilities` read-only
   * a `topic_whitelist` matching `lichtblick/layout.json`

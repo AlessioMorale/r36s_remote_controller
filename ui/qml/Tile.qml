@@ -3,7 +3,7 @@ import RcUi
 import QtQuick.Shapes
 
 // One instrument tile: title, a large value, and up to two detail lines.
-// `stale` greys it out with a dashed border and a STALE badge (last-known value);
+// `stale` marks it with a dashed border, a Stale badge and dimmed text (last-known value);
 // `highlighted` is the "visible" alarm level (amber frame).
 Rectangle {
     id: tile
@@ -15,7 +15,7 @@ Rectangle {
     property bool stale: false
     property bool highlighted: false
     property int valueSize: Theme.fsBig
-    property string badge: stale ? "STALE" : (tileState === "nodata" ? "NO DATA" : "")
+    property string badge: stale ? "Stale" : (tileState === "nodata" ? "No data" : "")
 
     readonly property color fg: stale ? Theme.staleText
                               : tileState === "armed" ? Theme.armedText
@@ -26,12 +26,13 @@ Rectangle {
                               : tileState === "warn" ? Theme.warn
                               : fg
 
+    radius: 0
     color: stale ? Theme.staleFill
          : tileState === "armed" ? Theme.armedFill
          : tileState === "ok" ? Theme.okFill
          : tileState === "warn" ? Theme.warnFill
          : Theme.tile
-    border.width: stale ? 0 : (highlighted ? 3 : 1)
+    border.width: stale ? 0 : (highlighted ? 4 : Theme.borderW)
     border.color: highlighted ? Theme.warn
                 : tileState === "ok" ? Theme.okBorder
                 : tileState === "armed" ? Theme.armedBorder
@@ -45,7 +46,7 @@ Rectangle {
         visible: tile.stale
         ShapePath {
             strokeColor: tile.highlighted ? Theme.warn : Theme.staleText
-            strokeWidth: tile.highlighted ? 3 : 2
+            strokeWidth: tile.highlighted ? 4 : 2
             strokeStyle: ShapePath.DashLine
             dashPattern: [3, 2]
             fillColor: "transparent"
@@ -62,10 +63,9 @@ Rectangle {
         x: 10; y: 7
         text: tile.title
         color: tile.stale ? Theme.staleText : (tile.tileState === "armed" ? Theme.armedText : Theme.textDim)
-        font.family: Theme.font
+        font.family: Theme.mono
         font.pixelSize: Theme.fsTitle
-        font.bold: true
-        font.letterSpacing: 1
+        font.weight: Font.DemiBold
     }
 
     Rectangle {
@@ -73,16 +73,16 @@ Rectangle {
         anchors { right: parent.right; top: parent.top; margins: 6 }
         width: badgeText.implicitWidth + 10
         height: badgeText.implicitHeight + 2
-        radius: 3
+        radius: 0
         color: tile.highlighted ? Theme.warn : Theme.staleText
         Text {
             id: badgeText
             anchors.centerIn: parent
             text: tile.badge
-            color: Theme.dark ? "#0e1113" : "#ffffff"
-            font.family: Theme.font
+            color: Theme.dark ? Theme.night : Theme.paper
+            font.family: Theme.mono
             font.pixelSize: 11
-            font.bold: true
+            font.weight: Font.DemiBold
         }
     }
 
@@ -93,9 +93,8 @@ Rectangle {
             width: parent.width
             text: tile.value
             color: tile.valueColor
-            font.family: Theme.font
+            font.family: Theme.display
             font.pixelSize: tile.valueSize
-            font.bold: true
             fontSizeMode: Text.HorizontalFit
             minimumPixelSize: 16
             elide: Text.ElideRight
@@ -107,7 +106,7 @@ Rectangle {
             color: tile.fg
             font.family: Theme.font
             font.pixelSize: Theme.fsSmall
-            font.bold: true
+            font.weight: Font.DemiBold
             elide: Text.ElideRight
         }
         Text {

@@ -7,7 +7,7 @@ Tile {
     readonly property var s: Telemetry.status
     readonly property bool hasData: Fmt.has(s.text) && s.text !== ""
 
-    title: "ROBOT"
+    title: "Robot"
     value: hasData ? s.text : Fmt.none
     sub1: {
         switch (tileState) {

@@ -10,7 +10,7 @@
 // The latest `telemetry` snapshot (docs/ipc.md), exposed to QML group by group.
 // Groups are plain maps that mirror the JSON (QML reads Telemetry.link.lq).
 // A group that was never received is an empty map, so every field reads as
-// `undefined` and the UI shows "—".
+// `undefined` and the UI shows "n/a".
 //
 // Staleness: each group's own `stale` flag comes from the daemon. On top of
 // that the UI marks everything stale when no snapshot arrived for staleUiMs

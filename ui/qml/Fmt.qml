@@ -1,9 +1,9 @@
 pragma Singleton
 import QtQuick
 
-// Formatting helpers. Missing values ("never received", JSON null) show as "—".
+// Formatting helpers. Missing values ("never received", JSON null) show as "n/a".
 QtObject {
-    readonly property string none: "—"
+    readonly property string none: "n/a"
 
     function has(v) { return v !== undefined && v !== null }
 

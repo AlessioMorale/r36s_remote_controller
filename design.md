@@ -1,4 +1,4 @@
-# Remote Controller — Design
+# Remote Controller: Design
 
 A handheld ground station for the KVN rover, built on an R36S (RK3326) handheld. The rover is driven over ExpressLRS (ELRS). Video and rich telemetry are added over WiFi through `foxglove_bridge` running on the robot, viewed in Lichtblick on the handheld.
 
@@ -15,12 +15,12 @@ A handheld ground station for the KVN rover, built on an R36S (RK3326) handheld.
 
 Rules derived from this:
 
-1. **R1 — Control only over ELRS.** Driving, arm/disarm, and stop commands travel only over CRSF. No WiFi path can command motion: `foxglove_bridge` runs with client publish, services, and parameters disabled.
-2. **R2 — WiFi loss never changes robot behavior.** ELRS loss always triggers failsafe, even if WiFi is up.
-3. **R3 — The handheld boots and runs with no network.** The control daemon and native UI never wait on WiFi or the VPN. ELRS module configuration is local (CRSF), not network-dependent.
-4. **R4 — Processes are isolated by criticality.** A crash in a less critical process never affects a more critical one (see §3).
-5. **R5 — On the robot, the control path has priority over optional load.** Video encoding and `foxglove_bridge` must not starve the CRSF → `/joy` → teleop → motor chain.
-6. **R6 — Essential telemetry arrives over ELRS.** Link quality, robot battery, and robot status are always displayed, independent of WiFi.
+1. **R1: Control only over ELRS.** Driving, arm/disarm, and stop commands travel only over CRSF. No WiFi path can command motion: `foxglove_bridge` runs with client publish, services, and parameters disabled.
+2. **R2: WiFi loss never changes robot behavior.** ELRS loss always triggers failsafe, even if WiFi is up.
+3. **R3: The handheld boots and runs with no network.** The control daemon and native UI never wait on WiFi or the VPN. ELRS module configuration is local (CRSF), not network-dependent.
+4. **R4: Processes are isolated by criticality.** A crash in a less critical process never affects a more critical one (see §3).
+5. **R5: On the robot, the control path has priority over optional load.** Video encoding and `foxglove_bridge` must not starve the CRSF → `/joy` → teleop → motor chain.
+6. **R6: Essential telemetry arrives over ELRS.** Link quality, robot battery, and robot status are always displayed, independent of WiFi.
 
 ## 2. System Overview
 
@@ -113,7 +113,7 @@ All options show the same data and follow the same rules:
 
 The options differ in how much of the 640x480 screen goes to video, and in how the screen changes when WiFi drops. The wireframes show proportions, not exact sizes; the values are sample data.
 
-##### Option A — Video HUD
+##### Option A: Video HUD
 
 Full-screen video, with thin translucent bars at the top and bottom, like an FPV display.
 
@@ -139,7 +139,7 @@ No WiFi: the video area becomes a large-format repeat of the essential telemetry
 block-beta
   columns 3
   lq["ELRS LQ 98% · −64 dBm"] st["ROBOT RDY"] bat["BATT 15.6 V · 72%"]
-  v["<br/><br/>NO VIDEO LINK — line-of-sight only<br/><br/><br/>LQ 98%   ·   15.6 V   ·   RDY<br/>(large digits)<br/><br/><br/>"]:3
+  v["<br/><br/>NO VIDEO LINK: line-of-sight only<br/><br/><br/>LQ 98%   ·   15.6 V   ·   RDY<br/>(large digits)<br/><br/><br/>"]:3
   arm["ARMED · R1 held · Turbo off"] net["WiFi down"] sys["R36S 81%"]
   classDef bar fill:#0e1113,stroke:#2a3238,color:#e8edf0
   classDef ok fill:#1f3b2e,stroke:#3ddc97,color:#e8edf0
@@ -159,7 +159,7 @@ block-beta
   * no room for Lichtblick plots, except small overlays
   * the screen changes the most when WiFi drops
 
-##### Option B — Instrument Split
+##### Option B: Instrument Split
 
 The video (4:3, about 448x336) is on the left, with a fixed instrument column on the right and a strip for WiFi-fed plots along the bottom.
 
@@ -223,7 +223,7 @@ block-beta
   * smaller video (about 70% of the width)
   * more layout work in QML
 
-##### Option C — Sunlight Tiles
+##### Option C: Sunlight Tiles
 
 A light, high-contrast theme for outdoor use. Telemetry tiles come first, and the video is an inset.
 
@@ -286,7 +286,7 @@ These are the same in every option; they take the chosen option's colors.
 ```mermaid
 block-beta
   columns 2
-  hdr["MENU — sticks held at neutral, robot not driven"]:2
+  hdr["MENU: sticks held at neutral, robot not driven"]:2
   s1["ELRS module"]:2
   p1["▶ TX power"] v1["‹ 100 mW ›"]
   p2["Packet rate"] v2["250 Hz"]
@@ -312,7 +312,7 @@ block-beta
 block-beta
   columns 3
   ban["ELRS LINK LOST<br/>Robot failsafe stop · last frame 2.4 s ago"]:3
-  lq["LQ —<br/>STALE"] bat["BATT 15.6 V<br/>STALE"] st["ROBOT RDY<br/>STALE"]
+  lq["LQ n/a<br/>STALE"] bat["BATT 15.6 V<br/>STALE"] st["ROBOT RDY<br/>STALE"]
   hint["Alarm tone on · check TX module power and antenna · move closer"]:3
   classDef crit fill:#c42b1c,stroke:#ff5a4e,color:#ffffff
   classDef stale fill:#2a3238,stroke:#8c98a0,color:#8c98a0,stroke-dasharray:4 3
@@ -424,7 +424,7 @@ The handset must match the robot's existing configuration in `teleop.yaml` (AETR
 | 3 | Rudder | unused | Left stick X |
 | 4 | AUX1 | `buttons[0]` = teleop enable | Arm latch && deadman held (§6) |
 | 5 | AUX2 | `buttons[1]` = turbo (per yaml header) | Toggle (e.g. R2) |
-| 6–7 | AUX3–4 | spare | — |
+| 6–7 | AUX3–4 | spare | n/a |
 
 The robot config is consistent with this table: `enable_button: 0` (AUX1) and `enable_turbo_button: 1` (AUX2) in `teleop.yaml` (plan T0.1). The turbo toggle is AUX2, a latching state of the handset, high = turbo; it is reset to normal on disarm.
 
@@ -463,7 +463,7 @@ The actual achieved rate is verified on hardware (plan A4).
 
 | Mode | ELRS | WiFi/VPN | Available | Indication |
 |---|---|---|---|---|
-| Full | OK | OK (direct) | Drive, essential telemetry, video, rich telemetry | — |
+| Full | OK | OK (direct) | Drive, essential telemetry, video, rich telemetry | n/a |
 | Degraded | OK | Down or relayed | Drive, essential telemetry; **line-of-sight only** | Quiet WiFi indicator |
 | Failsafe | Lost | any | Robot stopped by RX failsafe; handheld shows last-known state as stale | Loud alarm |
 | Disarmed | OK | any | Telemetry, configuration; no motion | Status bar |

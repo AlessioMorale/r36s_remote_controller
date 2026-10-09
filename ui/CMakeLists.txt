@@ -134,6 +134,10 @@ qt_add_qml_module(rc_ui
   RESOURCE_PREFIX /qt/qml
   QML_FILES ${RC_QML_FILES}
   RESOURCES resources/alarm.wav qml/qmldir
+    resources/slw-mark-128.png
+    resources/fonts/ArchivoBlack-Regular.ttf
+    resources/fonts/IBMPlexSans-Regular.ttf resources/fonts/IBMPlexSans-SemiBold.ttf
+    resources/fonts/IBMPlexMono-Regular.ttf resources/fonts/IBMPlexMono-SemiBold.ttf
   ${_rc_qml_opts}
 )
 

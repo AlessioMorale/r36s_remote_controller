@@ -37,10 +37,10 @@ Item {
 
     function headline() {
         if (useWebrtc && wantedRtc) {
-            if (Webrtc.state === "retrying") return "VIDEO RESTARTING"
-            return "CONNECTING VIDEO…"
+            if (Webrtc.state === "retrying") return "Video restarting"
+            return "Connecting video…"
         }
-        return wanted ? (cooling ? "VIDEO VIEW RESTARTING" : "CONNECTING VIDEO…") : "NO VIDEO LINK"
+        return wanted ? (cooling ? "Video view restarting" : "Connecting video…") : "No video link"
     }
     function detail() {
         if (useWebrtc && wantedRtc)

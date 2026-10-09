@@ -19,7 +19,7 @@ cat > "$TMP/cfg.json" <<EOF
   "robot": {"host": "127.0.0.1", "bridge_port": $PORT, "probe_interval_ms": 500},
   "lichtblick": {"enabled": ${RC_SHOT_LICHTBLICK:-true}, "url": "file://$HERE/fake_lichtblick.html"},
   "net": {"wifi_interface": "", "zerotier_cli": "zerotier-cli-missing-for-test"},
-  "ui": {"sound": false, "theme": "$THEME", "font_family": "${RC_SHOT_FONT:-Helvetica Neue}"} }
+  "ui": {"sound": false, "theme": "$THEME", "font_family": "${RC_SHOT_FONT:-}"} }
 EOF
 
 shoot() { # name scenario delay_ms [mock extra args]

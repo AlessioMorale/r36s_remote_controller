@@ -2,6 +2,7 @@
 // network status, exposed to QML as singletons in the `RcBackend` module.
 #include <QCommandLineParser>
 #include <QDir>
+#include <QFontDatabase>
 #include <QElapsedTimer>
 #include <QGuiApplication>
 #include <QLoggingCategory>
@@ -56,8 +57,16 @@ int main(int argc, char** argv) {
   QCoreApplication::setApplicationVersion(cfg->uiVersion());
   cfg->setParent(&app);
 
+  // Brand fonts (Slamming Works style guide): Archivo Black, IBM Plex Sans and Mono, bundled so the
+  // handheld needs nothing installed. Theme.qml selects them by family name.
+  for (const char* f : {"ArchivoBlack-Regular", "IBMPlexSans-Regular", "IBMPlexSans-SemiBold",
+                        "IBMPlexMono-Regular", "IBMPlexMono-SemiBold"}) {
+    const QString path = QStringLiteral(":/qt/qml/RcUi/resources/fonts/%1.ttf").arg(QLatin1String(f));
+    if (QFontDatabase::addApplicationFont(path) < 0) qCWarning(lcMain) << "font not loaded" << path;
+  }
+
   QCommandLineParser parser;
-  parser.setApplicationDescription(QStringLiteral("KVN handheld native UI"));
+  parser.setApplicationDescription(QStringLiteral("Slamming Works handheld ground station UI"));
   parser.addHelpOption();
   parser.addVersionOption();
   parser.addOption({QStringLiteral("config"), QStringLiteral("Config file (JSON)."), QStringLiteral("path")});

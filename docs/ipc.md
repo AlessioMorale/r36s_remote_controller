@@ -143,13 +143,13 @@ Every request carries an integer `id`, echoed in the `ack`.
 
 | `type` | Fields | Effect |
 |---|---|---|
-| `get_state` | — | Resends `hello`, the active alarms, and `params` to this client |
-| `param_refresh` | — | Re-reads the module's whole parameter tree |
+| `get_state` | n/a | Resends `hello`, the active alarms, and `params` to this client |
+| `param_refresh` | n/a | Re-reads the module's whole parameter tree |
 | `param_write` | `number`, `value` | Writes a parameter; `value` is the option index for `text_selection`, the raw integer otherwise, the status for `command`. Acked after the module confirms by re-sending the entry (timeout 1 s). |
 | `override_set` | `channel` (0–3), `value_us`, `ttl_ms` | Sets an axis override; see below |
 | `override_clear` | `channel` (optional) | Clears one or all overrides |
-| `menu_close` | — | Leaves the menu (same as pressing Select) |
-| `calibration_start` | — | Starts recording raw stick ranges (menu only) |
+| `menu_close` | n/a | Leaves the menu (same as pressing Select) |
+| `calibration_start` | n/a | Starts recording raw stick ranges (menu only) |
 | `calibration_finish` | `save` (bool) | Stops; with `save`, writes the ranges to the calibration file |
 
 ### Overrides

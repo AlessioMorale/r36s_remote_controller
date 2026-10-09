@@ -64,26 +64,26 @@ Rectangle {
             r.push(section("ELRS module" + (dev && dev.name ? " · " + dev.name : "")))
             const kids = Params.childrenOf(0)
             if (kids.length === 0)
-                r.push(info("i:noparams", "Module", Ipc.connected ? "no parameters (A on Reload)" : "daemon offline"))
+                r.push(info("i:noparams", "Module", Ipc.connected ? "No parameters (A on Reload)" : "Daemon offline"))
             for (const p of kids) r.push(paramRow(p))
             r.push({ kind: "action", key: "a:reload", label: "Reload parameters",
                      value: isBusy("a:reload") ? "reading…" : "A" })
 
             r.push(section("Input"))
             r.push({ kind: "action", key: "a:calibrate", label: "Calibrate sticks",
-                     value: isBusy("a:calibrate") ? "…" : calibrating ? "recording · A save · B cancel" : "Start" })
+                     value: isBusy("a:calibrate") ? "…" : calibrating ? "Recording: A save, B cancel" : "Start" })
 
             r.push(section("System"))
             r.push(info("i:net", "WiFi / VPN", Net.summary))
-            r.push(info("i:bridge", "Robot bridge", Net.robotEndpoint + (Net.robotReachable ? " · reachable" : " · unreachable")))
-            r.push({ kind: "choice", key: "c:theme", label: "Theme", value: Theme.dark ? "Dark" : "Light (sunlight)" })
+            r.push(info("i:bridge", "Robot bridge", Net.robotEndpoint + (Net.robotReachable ? ", reachable" : ", unreachable")))
+            r.push({ kind: "choice", key: "c:theme", label: "Theme", value: Theme.dark ? "Night" : "Paper (sunlight)" })
             r.push(info("i:daemon", "Daemon", Ipc.connected ? (Ipc.daemonVersion || "?") + " · IPC v" + Ipc.protocolVersion
-                                                            : "not connected"))
-            r.push(info("i:ui", "UI", AppConfig.uiVersion + (AppConfig.webEngineAvailable ? "" : " · no WebEngine")))
+                                                            : "Not connected"))
+            r.push(info("i:ui", "UI", AppConfig.uiVersion + (AppConfig.webEngineAvailable ? "" : ", no WebEngine")))
         } else {
             r.push(section(pg.title))
             const kids = Params.childrenOf(pg.number)
-            if (kids.length === 0) r.push(info("i:empty", "(empty folder)", ""))
+            if (kids.length === 0) r.push(info("i:empty", "Empty folder", ""))
             for (const p of kids) r.push(paramRow(p))
         }
         return r
@@ -153,7 +153,7 @@ Rectangle {
                 return
             }
             if (type === "param_write" && b.number !== undefined) menu.setPending(b.number, undefined)
-            else if (type === "calibration_start") { menu.calibrating = true; menu.showToast("Move both sticks to every corner, then A") }
+            else if (type === "calibration_start") { menu.calibrating = true; menu.showToast("Move both sticks to every corner, then press A") }
             else if (type === "calibration_finish") { menu.calibrating = false; menu.showToast(b.save ? "Calibration saved" : "Calibration discarded") }
         }
     }
@@ -256,19 +256,30 @@ Rectangle {
     Rectangle {
         id: header
         anchors { left: parent.left; right: parent.right; top: parent.top }
-        height: 36
+        height: 40
         color: menu.loud.length > 0 ? Theme.crit : Theme.menuHeader
+        border.color: Theme.border
+        border.width: Theme.borderW
+        // The mark keeps its clear space (1/8 of the tile, 4 px) on every side, so it is 32 px in 40.
+        Image {
+            id: mark
+            visible: menu.loud.length === 0
+            anchors { left: parent.left; leftMargin: 4; verticalCenter: parent.verticalCenter }
+            width: 32; height: 32
+            source: "qrc:/qt/qml/RcUi/resources/slw-mark-128.png"
+            sourceSize: Qt.size(128, 128)
+            smooth: true
+        }
         Text {
-            anchors.centerIn: parent
-            width: parent.width - 12
-            horizontalAlignment: Text.AlignHCenter
+            anchors { left: mark.visible ? mark.right : parent.left; leftMargin: 8; right: parent.right; rightMargin: 8
+                      verticalCenter: parent.verticalCenter }
             elide: Text.ElideRight
-            text: menu.loud.length > 0 ? "⚠ " + String(menu.loud[0].message).toUpperCase() + " · robot not driven"
-                                       : "MENU — sticks held at neutral, robot not driven"
+            text: menu.loud.length > 0 ? String(menu.loud[0].message) + ". Robot not driven."
+                                       : "Menu: sticks held neutral, robot not driven"
             color: menu.loud.length > 0 ? Theme.critText : Theme.menuHeaderText
-            font.family: Theme.font
-            font.pixelSize: 15
-            font.bold: true
+            font.family: menu.loud.length > 0 ? Theme.display : Theme.font
+            font.pixelSize: menu.loud.length > 0 ? 15 : 14
+            font.weight: Font.DemiBold
         }
     }
 
@@ -289,19 +300,19 @@ Rectangle {
             readonly property bool editable: modelData.kind === "param" || modelData.kind === "choice"
             width: ListView.view.width
             height: isSection ? 28 : 34
+            radius: 0
             color: isSection ? "transparent" : focused ? Theme.focusFill : Theme.tile
-            border.width: isSection ? 0 : focused ? 2 : 1
+            border.width: isSection ? 0 : focused ? 3 : Theme.borderW
             border.color: focused ? Theme.focusBorder : Theme.border
 
             Text {
                 anchors { left: parent.left; leftMargin: rowItem.isSection ? 4 : 12; verticalCenter: parent.verticalCenter }
                 width: parent.width * (rowItem.isSection ? 0.95 : 0.5)
-                text: (rowItem.focused ? "▶ " : "") + (rowItem.isSection ? modelData.label.toUpperCase() : modelData.label)
-                color: rowItem.isSection ? Theme.textDim : Theme.text
-                font.family: Theme.font
-                font.pixelSize: rowItem.isSection ? 13 : Theme.fsMed
-                font.bold: rowItem.isSection || rowItem.focused
-                font.letterSpacing: rowItem.isSection ? 1 : 0
+                text: modelData.label
+                color: rowItem.isSection ? Theme.textDim : rowItem.focused ? Theme.onFocus : Theme.text
+                font.family: rowItem.isSection ? Theme.display : Theme.font
+                font.pixelSize: rowItem.isSection ? 14 : Theme.fsMed
+                font.weight: rowItem.focused ? Font.DemiBold : Font.Normal
                 elide: Text.ElideRight
             }
             Text {
@@ -313,10 +324,11 @@ Rectangle {
                     const v = modelData.value === undefined ? "" : String(modelData.value)
                     return rowItem.focused && rowItem.editable ? "‹ " + v + " ›" : v
                 }
-                color: modelData.pending ? Theme.accent : modelData.kind === "info" ? Theme.textDim : Theme.text
+                color: rowItem.focused ? Theme.onFocus : modelData.pending ? Theme.accent : modelData.kind === "info" ? Theme.textDim : Theme.text
                 font.family: Theme.font
                 font.pixelSize: Theme.fsMed
-                font.bold: rowItem.focused || modelData.pending === true
+                font.weight: rowItem.focused || modelData.pending === true ? Font.DemiBold : Font.Normal
+                font.underline: modelData.pending === true
                 elide: Text.ElideLeft
             }
         }
@@ -327,19 +339,20 @@ Rectangle {
         visible: menu.toast !== ""
         anchors { left: parent.left; right: parent.right; bottom: footer.top; margins: 8 }
         height: 30
-        radius: 4
-        color: menu.toastError ? Theme.crit : Theme.focusFill
-        border.color: menu.toastError ? Theme.critBorder : Theme.focusBorder
+        radius: 0
+        color: menu.toastError ? Theme.crit : Theme.violet
+        border.color: Theme.paper
+        border.width: Theme.borderW
         Text {
             anchors.centerIn: parent
             width: parent.width - 16
             horizontalAlignment: Text.AlignHCenter
             elide: Text.ElideRight
             text: menu.toast
-            color: menu.toastError ? Theme.critText : Theme.text
+            color: Theme.paper
             font.family: Theme.font
             font.pixelSize: Theme.fsSmall
-            font.bold: true
+            font.weight: Font.DemiBold
         }
     }
     Timer { id: toastTimer; interval: 4000; onTriggered: menu.toast = "" }
@@ -348,8 +361,9 @@ Rectangle {
         id: footer
         anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
         height: 28
-        color: Theme.bar
+        color: Theme.bg
         border.color: Theme.border
+        border.width: Theme.borderW
         Text {
             anchors.centerIn: parent
             text: {
@@ -360,8 +374,8 @@ Rectangle {
                 return "D-pad move · A select · B " + (menu.stack.length > 1 ? "back" : "close") + " · Select close"
             }
             color: Theme.textDim
-            font.family: Theme.font
-            font.pixelSize: 13
+            font.family: Theme.mono
+            font.pixelSize: 12
         }
     }
 }

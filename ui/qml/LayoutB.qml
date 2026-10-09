@@ -2,7 +2,7 @@ import QtQuick
 import RcUi
 import RcBackend 1.0
 
-// Screen layout option B — "Instrument Split" (design §3.2.1, recommended).
+// Screen layout option B, "Instrument Split" (design §3.2.1, recommended).
 // Left: the WiFi-fed area (448x336 video + plots strip); right: the fixed ELRS
 // instrument column. Only the left area changes between full and degraded mode.
 //

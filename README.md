@@ -1,8 +1,16 @@
+![Slamming Works](docs/slw-lockup.png)
+
 # Remote controller
 
-A handheld ground station for the KVN rover (R36S handheld, ExpressLRS control link, optional
-WiFi video). [design.md](design.md) is the design, [plan.md](plan.md) the development plan,
+A Slamming Works handheld ground station for the KVN rover (R36S handheld, ExpressLRS control
+link, optional WiFi video). Its look is the Slamming Works look: Night and Paper
+surfaces, Slam Violet fills, Archivo Black, IBM Plex Sans and Mono (see [docs/ui.md](docs/ui.md)). [design.md](design.md) is the design, [plan.md](plan.md) the development plan,
 [docs/results.md](docs/results.md) what is done and verified.
+
+![Drive screen](docs/screenshots/full.png)
+
+The screenshot comes from the offscreen UI with mock data. The video area shows a stand-in image,
+not a real camera.
 
 ## Getting the sources
 
@@ -70,3 +78,13 @@ neutral; AUX1 (the robot's teleop enable) is high only while armed (L1+R1 held f
 neutral), R1 held, and the menu closed. No IPC request can arm or touch AUX1: the UI socket
 can only change module parameters, set bounded axis overrides, and run calibration. A crash of
 the UI, a stalled UI client or WiFi loss never changes the TX loop.
+
+## Status
+
+**Partly works.** The daemon, IPC and native UI are verified on a desktop with mock data. The
+hardware bring-up (TX module on the internal UART, image on the R36S, WiFi video on device) is
+still open. Per-task status and the open items are in [docs/results.md](docs/results.md).
+
+## License
+
+Not chosen yet. `deps/elrs_joy` carries its own license.

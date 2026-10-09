@@ -153,7 +153,7 @@ class TstBackend : public QObject {
         "input":{"mode":"menu","device":false,"turbo":false},"overrides":[]})")));
     QVERIFY(t.link().isEmpty());
     QVERIFY(!t.link().contains("lq"));
-    QVERIFY(!t.battery().contains("percent"));  // null field -> absent -> "—"
+    QVERIFY(!t.battery().contains("percent"));  // null field -> absent -> "n/a"
     QVERIFY(t.battery().value("stale").toBool());
     QVERIFY(!t.isLive("link"));
     QVERIFY(!t.isLive("battery"));

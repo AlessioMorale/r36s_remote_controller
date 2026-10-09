@@ -16,7 +16,7 @@ Window {
     visible: true
     visibility: AppConfig.fullscreen ? Window.FullScreen : Window.Windowed
     color: Theme.bg
-    title: "KVN remote"
+    title: "Slamming Works remote controller"
 
     readonly property bool menuOpen: Telemetry.menuMode && Ipc.connected
     readonly property var otherLoud: Alarms.loudAlarms.filter(a => a.id !== "elrs_lost")

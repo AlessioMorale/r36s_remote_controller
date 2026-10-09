@@ -19,27 +19,25 @@ Rectangle {
         height: 150
         color: Theme.crit
         border.color: Theme.critBorder
-        border.width: 4
+        border.width: Theme.borderW
         Column {
             anchors.centerIn: parent
             spacing: 6
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "ELRS LINK LOST"
+                text: "ELRS link lost"
                 color: Theme.critText
-                font.family: Theme.font
-                font.pixelSize: 50
-                font.bold: true
-                font.letterSpacing: 2
+                font.family: Theme.display
+                font.pixelSize: 46
             }
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "Robot failsafe stop · " + (Fmt.has(scr.l.age_ms) ? "last frame " + Fmt.seconds(scr.l.age_ms) + " ago"
-                                                                      : "no link frame received")
+                text: "Robot failsafe stop. " + (Fmt.has(scr.l.age_ms) ? "Last frame " + Fmt.seconds(scr.l.age_ms) + " ago"
+                                                                      : "No link frame received")
                 color: Theme.critText
                 font.family: Theme.font
                 font.pixelSize: 20
-                font.bold: true
+                font.weight: Font.DemiBold
             }
         }
     }
@@ -51,7 +49,7 @@ Rectangle {
         readonly property real tileW: (width - 2 * spacing) / 3
         Tile {
             width: tiles.tileW; height: 170
-            title: "LINK"
+            title: "Link"
             value: "LQ " + Fmt.none
             sub1: Fmt.num(scr.l.rssi_dbm, 0, "dBm") + " · " + Fmt.num(scr.l.snr_db, 0, "dB")
             sub2: "TX " + Fmt.num(scr.l.tx_power_mw, 0, "mW")
@@ -60,7 +58,7 @@ Rectangle {
         }
         Tile {
             width: tiles.tileW; height: 170
-            title: "ROBOT BATT"
+            title: "Robot batt"
             value: Fmt.num(scr.b.voltage, 1, "V")
             sub1: (Fmt.has(scr.b.percent) ? scr.b.percent + "%" : Fmt.none)
             stale: true
@@ -68,7 +66,7 @@ Rectangle {
         }
         Tile {
             width: tiles.tileW; height: 170
-            title: "ROBOT"
+            title: "Robot"
             value: Fmt.has(scr.s.text) && scr.s.text !== "" ? scr.s.text : Fmt.none
             stale: true
             valueSize: 34
@@ -80,18 +78,19 @@ Rectangle {
         height: 64
         color: Theme.bar
         border.color: Theme.border
+        border.width: Theme.borderW
         Text {
             anchors.fill: parent
             anchors.margins: 8
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             wrapMode: Text.WordWrap
-            text: (scr.toneOn ? "Alarm tone on" : "Alarm tone off") +
-                  " · check TX module power and antenna · move closer"
+            text: (scr.toneOn ? "Alarm tone on. " : "Alarm tone off. ") +
+                  "Check TX module power and antenna, move closer."
             color: Theme.text
             font.family: Theme.font
             font.pixelSize: Theme.fsMed
-            font.bold: true
+            font.weight: Font.DemiBold
         }
     }
 }

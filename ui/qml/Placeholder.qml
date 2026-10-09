@@ -11,7 +11,7 @@ Rectangle {
 
     color: Theme.novid
     border.color: Theme.border
-    border.width: 1
+    border.width: Theme.borderW
 
     Column {
         anchors.centerIn: parent
@@ -22,10 +22,8 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             text: ph.headline
             color: Theme.textMuted
-            font.family: Theme.font
+            font.family: Theme.display
             font.pixelSize: ph.headlineSize
-            font.bold: true
-            font.letterSpacing: 1
             wrapMode: Text.WordWrap
         }
         Text {
@@ -44,8 +42,7 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             text: ph.reason
             color: Theme.textMuted
-            opacity: 0.8
-            font.family: Theme.font
+            font.family: Theme.mono
             font.pixelSize: Theme.fsSmall
             wrapMode: Text.WordWrap
         }
