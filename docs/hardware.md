@@ -48,6 +48,24 @@ The device-side free-up of the UART (kernel console, getty, FIQ debugger) is in
 The streamer (`kvn_video_streamer`) takes the camera as a GStreamer source string and the
 encoder as a parameter, so this choice is configuration, not code.
 
+## OS image in use
+
+The handheld runs the (d)ArkOS image with the [arkos4clone](https://github.com/lcdyk0517/arkos4clone/tree/main/rootfs) rootfs overlay (`rootfs/ArkOS` or `rootfs/dArkOS`), which adds support for R36S clone boards on the 4.4 BSP kernel. Not Armbian. Fill in on the device:
+
+| Item | Value |
+|---|---|
+| Overlay variant (ArkOS or dArkOS) | |
+| `/etc/os-release` | |
+| `uname -r` | |
+| glibc (`ldd --version`) | |
+| GStreamer (`gst-inspect-1.0 --version`) | |
+| Qt (`qmake6 -v` or `ls /usr/lib/*/libQt6Core.so*`) | |
+| GPU / display stack (libmali? KMSDRM, eglfs?) | |
+| Gamepad layout setting (XBOX or Nintendo) | |
+| Hardware H.264 decode available (`gst-inspect-1.0 | grep -i -E "mpp|v4l2"`) | |
+
+The overlay also installs EmulationStation, `351mp`, `batteryplus` and `es-status-daemon` services and a `99-odroidgo3.rules` udev rule; the provisioning must disable the gaming services (`image/darkos/provision.sh`).
+
 ## Board revision and panel (T0.5)
 
 | Item | Value |
