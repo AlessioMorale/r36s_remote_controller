@@ -1,0 +1,5 @@
+# Singletons for the QML files in this directory. Qt 6.4 does not embed a usable module
+# qmldir for an executable, so Theme and Fmt would resolve to nothing on the device (they only
+# worked next to the build tree, which has a copy). Qt 6.5+ does not need this file.
+singleton Theme 1.0 Theme.qml
+singleton Fmt 1.0 Fmt.qml

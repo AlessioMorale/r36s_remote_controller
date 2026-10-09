@@ -133,7 +133,7 @@ qt_add_qml_module(rc_ui
   VERSION 1.0
   RESOURCE_PREFIX /qt/qml
   QML_FILES ${RC_QML_FILES}
-  RESOURCES resources/alarm.wav
+  RESOURCES resources/alarm.wav qml/qmldir
   ${_rc_qml_opts}
 )
 
