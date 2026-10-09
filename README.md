@@ -33,7 +33,7 @@ Submodule URLs are HTTPS so CI can fetch them; to push over SSH locally:
 | `ui` | QML UI and thin C++ host; `ui/tools/mock_daemon.py` for UI work without the daemon |
 | `lichtblick` | Pinned Lichtblick build and fixed layout |
 | `systemd` | Handheld units and the `/dev/elrs_tx` udev rule |
-| `image` | Armbian / dArkOS provisioning, cross-build helpers |
+| `image` | `noble/` (build and provision an Armbian noble R36S over SSH), Armbian / dArkOS provisioning, cross-build helpers |
 | `docs` | `ui.md` (screens and navigation), `ipc.md` (daemon ↔ UI), `budgets.md`, `hardware.md`, `results.md`, screenshots |
 
 ## Try it on a desktop (no hardware)

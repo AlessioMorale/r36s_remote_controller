@@ -239,6 +239,33 @@ A1–A5 not started: they run on the target hardware with the provisioned image.
 
 ---
 
+## Handheld deployment on Armbian noble (T1.1, T1.3, T3.9) — Partly
+
+`image/noble/` builds the arm64 noble binaries in a container (`build.sh`, about 10 minutes with a cold cache) and provisions the device over SSH (`deploy.sh user@host`, with `RC_SUDO_PASSWORD` for sudo): stages resize, packages, desktop, files, uart, verify, with automatic reboots. Everything installs under `/opt/kvn_remote_control`; the systemd units and the udev rule are links to it. Run on the real R36S (Armbian 25.08 noble, kernel 6.12.32) on 2026-10-09:
+
+Verified on the device:
+
+* The root partition grew from 5.2 GB to the whole 59.5 GB card (`sfdisk -N` + `partx -u` + `resize2fs`, online).
+* UART2 is free: `console=ttyS2` removed from `/boot/u-boot/boot.ini` (backup `boot.ini.rc-backup`), `serial-getty@ttyS2` masked, `/dev/elrs_tx` -> `ttyS2` after the reboot. The ELRS module itself was not attached.
+* `control_daemon` runs as `rc`, disarmed, found the pad (`r36s_Gamepad`, `/dev/input/event3`), opened the serial port and sends frames at 4 ms with 175 us p99 period jitter; `ctl state` answers over the socket.
+* `rc_ui` runs on `eglfs` as DRM master with no QML or display errors, 3% CPU and 133 MB RSS when idle, 340 MB RAM free.
+* `webrtcsrc` loads from `/opt/kvn_remote_control/gst-rs`; `v4l2slh264dec` (Hantro) and `avdec_h264` are present.
+
+Problems found and fixed on the way:
+
+* `parted` refuses to resize a mounted partition non-interactively (the script now uses `sfdisk`).
+* `/tmp` is cleared by a reboot, so `deploy.sh` copies the files before every pass.
+* The UI showed only the text console: `rc` is not the first opener of `/dev/dri/card0` (plymouth is), so setting DRM master failed with EACCES; `rc-ui.service` now has `AmbientCapabilities=CAP_SYS_ADMIN`.
+* The UI's `Theme` and `Fmt` singletons were undefined: Qt 6.4 does not embed a module `qmldir` for an executable, and the earlier tests had found one next to the build tree. `ui/qml/qmldir` now declares them, and the check is to run the binary alone, outside the build directory.
+
+Not verified:
+
+* The picture on the screen: I cannot see the display, so the user has to confirm it (no UI screenshot from the device yet).
+* Alarm tone: `rc` has no PulseAudio session (`pa_context_connect() failed`, "No audio device detected"), so the loud alarm may be silent.
+* H.264 decode through the Hantro decoder with a real WebRTC stream, and the CPU cost of either decoder.
+* ELRS module on UART2 (CRSF at 921600 baud, T1.3 reboot test), the WiFi/VPN path (no WLAN or ZeroTier installed).
+* A second run from a fresh image; the passes so far reused one device.
+
 ## WebRTC spike (gst-plugins-rs `webrtcsink` / `webrtcsrc`) — Partly
 
 Question: can video go straight to the handheld over WebRTC instead of through `foxglove_bridge` and Lichtblick. Scripts in `tools/webrtc_spike/`.
