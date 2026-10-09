@@ -50,21 +50,22 @@ encoder as a parameter, so this choice is configuration, not code.
 
 ## OS image in use
 
-The handheld runs the (d)ArkOS image with the [arkos4clone](https://github.com/lcdyk0517/arkos4clone/tree/main/rootfs) rootfs overlay (`rootfs/ArkOS` or `rootfs/dArkOS`), which adds support for R36S clone boards on the 4.4 BSP kernel. Not Armbian. Fill in on the device:
+Armbian-unofficial 25.08.0-trunk, Ubuntu 24.04 (noble), installed after the arkos4clone ((d)ArkOS, BSP 4.4) rootfs turned out not to be needed. Read over SSH on 2026-10-09, nothing changed on the device yet:
 
 | Item | Value |
 |---|---|
-| Overlay variant (ArkOS or dArkOS) | |
-| `/etc/os-release` | |
-| `uname -r` | |
-| glibc (`ldd --version`) | |
-| GStreamer (`gst-inspect-1.0 --version`) | |
-| Qt (`qmake6 -v` or `ls /usr/lib/*/libQt6Core.so*`) | |
-| GPU / display stack (libmali? KMSDRM, eglfs?) | |
-| Gamepad layout setting (XBOX or Nintendo) | |
-| Hardware H.264 decode available (`gst-inspect-1.0 | grep -i -E "mpp|v4l2"`) | |
-
-The overlay also installs EmulationStation, `351mp`, `batteryplus` and `es-status-daemon` services and a `99-odroidgo3.rules` udev rule; the provisioning must disable the gaming services (`image/darkos/provision.sh`).
+| Kernel | 6.12.32-lts-rk3326 (mainline), aarch64 |
+| glibc | 2.39 (same as the build containers) |
+| GStreamer | 1.24.2 (base, good, tools); no bad, ugly, libav, nice |
+| Qt | none installed |
+| GPU / display | Mali G31 on Panfrost, Mesa 24.2.8, DSI panel (640x480 landscape); `/dev/dri/card0`, `renderD128` |
+| Video decoder | `rockchip,px30-vpu-dec` (`/dev/video1`), encoder `px30-vpu-enc`; `v4l2slh264dec` needs `gstreamer1.0-plugins-bad` |
+| RAM / CPU | 947 MB, 4 cores |
+| Storage | SD 59.5 GB, root partition 5.2 GB (827 MB free), not expanded |
+| Network | USB Ethernet `enx00e04c361458` 192.168.8.70; no WLAN seen |
+| Inputs | `r36s_Gamepad` (`js0`, `event3`), `gpio-keys-vol`, `rk805 pwrkey` |
+| UART2 | still the console: `console=ttyS2,115200` in the kernel command line and `serial-getty@ttyS2` running |
+| Access | user `r36s`, SSH key, `sudo` with a password |
 
 ## Board revision and panel (T0.5)
 
