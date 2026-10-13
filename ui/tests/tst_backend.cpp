@@ -206,7 +206,7 @@ class TstBackend : public QObject {
     QStringList names;
     for (const auto& v : root) names << v.toMap().value("name").toString();
     QCOMPARE(names, (QStringList{"Packet Rate", "TX Power", "Bind", "Gain"}));  // hidden skipped
-    const auto tx = p.childrenOf(4);  // children [5, 6]; 6 unknown -> skipped
+    const auto tx = p.childrenOf(4);  // children [5, 6]; only 5 has parent 4
     QCOMPARE(tx.size(), 1);
     QCOMPARE(p.displayValue(5), QString("100 mW"));
     QCOMPARE(p.displayValue(5, 4), QString("250 mW"));
@@ -221,6 +221,33 @@ class TstBackend : public QObject {
     QCOMPARE(p.stepValue(1, 2, -1).toInt(), 0);
     QCOMPARE(p.stepValue(12, 125, +1).toLongLong(), 130);
     QCOMPARE(p.stepValue(12, 498, +1).toLongLong(), 500);
+  }
+
+  // A folder's contents come from the entries' `parent`, whatever the folder's own `children`
+  // says: a real module may send no list (empty), a wrong one, or none at all.
+  void folderChildrenFollowParent() {
+    ParamModel p;
+    QVERIFY(p.setTree(json(R"({"type":"params","complete":true,"device":{"name":"x"},"params":[
+      {"number":1,"parent":0,"type":"folder","name":"Empty list","hidden":false,"children":[]},
+      {"number":2,"parent":1,"type":"text_selection","name":"A","hidden":false,"value":0,"min":0,"max":1,"options":["a","b"],"unit":""},
+      {"number":3,"parent":1,"type":"info","name":"B","hidden":false,"text":"b"},
+      {"number":4,"parent":0,"type":"folder","name":"Wrong list","hidden":false,"children":[9,10]},
+      {"number":5,"parent":4,"type":"info","name":"C","hidden":false,"text":"c"},
+      {"number":6,"parent":4,"type":"info","name":"Hidden","hidden":true,"text":"h"},
+      {"number":7,"parent":0,"type":"folder","name":"No list","hidden":false},
+      {"number":8,"parent":7,"type":"info","name":"D","hidden":false,"text":"d"},
+      {"number":9,"parent":8,"type":"info","name":"Nested","hidden":false,"text":"n"}
+    ]})")));
+    auto names = [&](int folder) {
+      QStringList out;
+      for (const auto& v : p.childrenOf(folder)) out << v.toMap().value("name").toString();
+      return out;
+    };
+    QCOMPARE(names(0), (QStringList{"Empty list", "Wrong list", "No list"}));
+    QCOMPARE(names(1), (QStringList{"A", "B"}));  // empty children list
+    QCOMPARE(names(4), (QStringList{"C"}));       // wrong list, one hidden entry
+    QCOMPARE(names(7), (QStringList{"D"}));       // no list at all
+    QCOMPARE(names(8), (QStringList{"Nested"}));  // a non-folder parent is still followed
   }
 
   // ------------------------------------------------------------- IpcClient
