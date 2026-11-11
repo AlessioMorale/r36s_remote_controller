@@ -1,7 +1,7 @@
 import QtQuick
 import RcUi
 
-// Native panel shown where WiFi-fed content (video, plots) would be.
+// Native panel shown where network-fed (WiFi or Ethernet) content (video, plots) would be.
 Rectangle {
     id: ph
     property string headline

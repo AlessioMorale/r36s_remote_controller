@@ -8,9 +8,9 @@
 |---|---|
 | Left, large | Video (needs WiFi). Below it, a plot strip (needs WiFi). |
 | Right column | Four tiles that never move: **Link** (LQ, RSSI, SNR, TX power), **Robot batt** (V, %, A, mAh), **Robot** (status string), **Drive** (armed or disarmed, deadman, AUX1). The Drive tile is Acid Lime while armed, the one accent on the screen. |
-| Bottom bar | On Slam Violet. Mode (`Drive` / `Menu`), turbo state, WiFi/VPN state and latency. |
+| Bottom bar | On Slam Violet. Mode (`Drive` / `Menu`), turbo state, the handheld's IP address, network/VPN state and latency. The network can be WiFi or Ethernet (`Eth`); every network feature works over either. |
 
-Essential telemetry (right column and bottom bar) comes over ELRS and is the same in every mode. Only the video and plot areas depend on WiFi.
+Essential telemetry (right column and bottom bar) comes over ELRS and is the same in every mode. Only the video and plot areas depend on the network (WiFi or Ethernet).
 
 ![Normal drive screen](screenshots/full.png)
 
@@ -66,11 +66,23 @@ While the menu is open the sticks are forced neutral and the robot is not driven
 
 ## Menu
 
-Sections, top to bottom: **ELRS module** (the TX module's own parameters: packet rate, telemetry ratio, power, bind), **Input** (stick calibration), **System** (WiFi/VPN, robot bridge, theme, versions). Values with `‹ ›` are editable; a change is sent to the module only when you press A.
+Sections, top to bottom: **ELRS module** (the TX module's own parameters: packet rate, telemetry ratio, power, bind), **Input** (stick calibration), **System** (network/VPN with the active interface, every connected interface's IP address, robot bridge, theme, versions). Values with `‹ ›` are editable; a change is sent to the module only when you press A.
 
 | ELRS parameters | System |
 |---|---|
 | ![Menu](screenshots/menu.png) | ![System section](screenshots/menu_system.png) |
+
+## Network
+
+The UI treats WiFi and Ethernet (for example a USB Ethernet adapter) the same way: video, plots, the bridge probe and the VPN indicator work over whichever is connected. `net.interfaces` in `/etc/rc/ui.json` chooses which interfaces count:
+
+| Value | Meaning |
+|---|---|
+| `"auto"` (default) | Every physical interface. Loopback, ZeroTier, Docker, bridges and tunnels are skipped. The primary one carries the default route, or else is the first wired one. |
+| `["eth0", "wlan0"]` | Only these interfaces, in this priority order |
+| `"off"` | No detection: the indicator shows `Net` |
+
+The status bar always shows the primary interface's IPv4 address (`no IP` when nothing is connected), and the menu's System section lists every connected interface with its addresses. The older `net.wifi_interface` key is ignored, except that `""` still means `"off"`. An existing `/etc/rc/ui.json` that still has `"wlan0"` there therefore also works over Ethernet.
 
 ## Degraded states
 

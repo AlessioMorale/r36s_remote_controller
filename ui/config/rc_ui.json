@@ -26,7 +26,7 @@
     "hang_timeout_ms": 10000
   },
   "net": {
-    "wifi_interface": "wlan0",
+    "interfaces": "auto",
     "zerotier_cli": "zerotier-cli",
     "zerotier_network": "",
     "robot_node_id": "",

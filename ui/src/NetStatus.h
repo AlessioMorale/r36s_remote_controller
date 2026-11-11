@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QPointer>
 #include <QProcess>
+#include <QStringList>
 #include <QTcpSocket>
 #include <QTimer>
 
@@ -16,8 +17,13 @@ class AppConfig;
 // WiFi / VPN / robot reachability (plan T4.6). Informational only: these
 // indicators are "quiet" severity and never raise a loud alarm (design §1, R2).
 //
-// * wifi:  "up" when the configured interface exists and is running,
-//          "down" when it is missing or not running, "unknown" if none configured.
+// * link:  the handheld's own network link, WiFi and Ethernet alike: "wifi" or "ethernet"
+//          for the primary connected interface, "down" when none is connected, "unknown"
+//          when detection is off (net.interfaces "off"). Every feature that needs the
+//          network (video, plots, bridge) works over either. The primary interface is the
+//          one carrying the default route, else the first wired one, else the first wireless.
+// * address / addresses: the primary interface's IPv4 address, and every connected
+//          interface with its addresses ("enx00e0… 192.168.8.70 · wlan0 10.0.0.5").
 // * vpn:   from `zerotier-cli -j listnetworks`: "ok" when the configured network
 //          (or any network, if none configured) has status OK, else "down";
 //          "unknown" when zerotier-cli is missing or fails.
@@ -28,7 +34,11 @@ class AppConfig;
 //          connect time. Goes true on one success, false after two failures.
 class NetStatus : public QObject {
   Q_OBJECT
-  Q_PROPERTY(QString wifi READ wifi NOTIFY changed)
+  Q_PROPERTY(QString link READ link NOTIFY changed)
+  Q_PROPERTY(QString linkLabel READ linkLabel NOTIFY changed)
+  Q_PROPERTY(QString linkInterface READ linkInterface NOTIFY changed)
+  Q_PROPERTY(QString address READ address NOTIFY changed)
+  Q_PROPERTY(QString addresses READ addresses NOTIFY changed)
   Q_PROPERTY(QString vpn READ vpn NOTIFY changed)
   Q_PROPERTY(QString path READ path NOTIFY changed)
   Q_PROPERTY(int latencyMs READ latencyMs NOTIFY changed)
@@ -47,13 +57,37 @@ class NetStatus : public QObject {
     QString path;  // direct / relayed / unknown
     int latencyMs = -1;
   };
+  struct Iface {
+    QString name;
+    bool wireless = false;
+    bool running = false;
+    QStringList ipv4;
+  };
+  struct LinkResult {
+    QString link;       // wifi / ethernet / down
+    QString ifname;     // primary interface, "" when down
+    QString address;    // its first IPv4 address, "" if it has none
+    QString addresses;  // every connected interface: "name addr[, addr]" joined by " · "
+  };
+  // Picks the primary link. `allow` empty = auto (any interface given, which the caller has
+  // already filtered to physical ones); otherwise only those names, in that priority order.
+  static LinkResult pickLink(const QList<Iface>& ifaces, const QStringList& allow, const QString& defaultRouteIf);
+  // Interface of the IPv4 default route from /proc/net/route ("" if none).
+  static QString parseDefaultRoute(const QByteArray& procNetRoute);
+  // Auto mode skips loopback and virtual / VPN interfaces (ZeroTier, Docker, bridges, tunnels).
+  static bool isVirtualName(const QString& name);
+
   static VpnResult parseNetworks(const QByteArray& json, const QString& networkId);
   static PathResult parsePeers(const QByteArray& json, const QString& nodeId);
 
   explicit NetStatus(const AppConfig* cfg, QObject* parent = nullptr);
   void start();
 
-  QString wifi() const { return m_wifi; }
+  QString link() const { return m_link.link; }
+  QString linkLabel() const;
+  QString linkInterface() const { return m_link.ifname; }
+  QString address() const { return m_link.address; }
+  QString addresses() const { return m_link.addresses; }
   QString vpn() const { return m_vpn; }
   QString path() const { return m_path; }
   int latencyMs() const { return m_latencyMs; }
@@ -69,7 +103,7 @@ class NetStatus : public QObject {
 
  private:
   void poll();
-  void pollWifi();
+  void pollLink();
   void runZt(const QStringList& args, std::function<void(bool ok, const QByteArray&)> done);
   void probe();
   void probeResult(bool ok);
@@ -83,7 +117,7 @@ class NetStatus : public QObject {
   QTimer m_probeTimeout;
   QElapsedTimer m_probeClock;
 
-  QString m_wifi = QStringLiteral("unknown");
+  LinkResult m_link{QStringLiteral("unknown"), {}, {}, {}};
   QString m_vpn = QStringLiteral("unknown");
   QString m_path = QStringLiteral("unknown");
   int m_latencyMs = -1;

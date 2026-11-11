@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QJsonObject>
 
 // UI configuration, loaded once from a JSON file (see config/rc_ui.json).
@@ -64,7 +65,11 @@ class AppConfig : public QObject {
   int lichtblickPingIntervalMs() const { return m_lbPingIntervalMs; }
   int lichtblickHangTimeoutMs() const { return m_lbHangTimeoutMs; }
 
-  QString wifiInterface() const { return m_wifiInterface; }
+  // Network links NetStatus watches (net.interfaces): "auto" (every physical interface,
+  // WiFi or Ethernet), "off", or a list of interface names in priority order.
+  bool netAuto() const { return m_netAuto; }
+  bool netOff() const { return m_netOff; }
+  QStringList netInterfaces() const { return m_netInterfaces; }
   QString zerotierCli() const { return m_zerotierCli; }
   QString zerotierNetwork() const { return m_zerotierNetwork; }
   QString robotNodeId() const { return m_robotNodeId; }
@@ -129,7 +134,9 @@ class AppConfig : public QObject {
   int m_lbPingIntervalMs = 3000;
   int m_lbHangTimeoutMs = 10000;
 
-  QString m_wifiInterface = QStringLiteral("wlan0");
+  bool m_netAuto = true;
+  bool m_netOff = false;
+  QStringList m_netInterfaces;
   QString m_zerotierCli = QStringLiteral("zerotier-cli");
   QString m_zerotierNetwork;
   QString m_robotNodeId;

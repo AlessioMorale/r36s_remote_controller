@@ -365,6 +365,64 @@ class TstBackend : public QObject {
     QCOMPARE(NetStatus::parsePeers(peers, "9999999999").path, QString("relayed"));
     QCOMPARE(NetStatus::parsePeers(peers, "").path, QString("unknown"));
   }
+
+  // -------------------------------------------------------------- link (WiFi or Ethernet)
+  void linkSelection() {
+    using I = NetStatus::Iface;
+    const I eth{"enx00e04c361458", false, true, {"192.168.8.70"}};
+    const I wlan{"wlan0", true, true, {"10.0.0.5"}};
+    const I wlanDown{"wlan0", true, false, {}};
+    const I ethNoIp{"eth0", false, true, {}};
+
+    // Ethernet only (the current R36S): a full link, with its address.
+    auto r = NetStatus::pickLink({eth, wlanDown}, {}, "");
+    QCOMPARE(r.link, QString("ethernet"));
+    QCOMPARE(r.ifname, QString("enx00e04c361458"));
+    QCOMPARE(r.address, QString("192.168.8.70"));
+    QCOMPARE(r.addresses, QString("enx00e04c361458 192.168.8.70"));
+
+    // WiFi only.
+    r = NetStatus::pickLink({I{"eth0", false, false, {}}, wlan}, {}, "");
+    QCOMPARE(r.link, QString("wifi"));
+    QCOMPARE(r.address, QString("10.0.0.5"));
+
+    // Both: the default route decides; without one, wired wins. Both are listed.
+    r = NetStatus::pickLink({eth, wlan}, {}, "wlan0");
+    QCOMPARE(r.link, QString("wifi"));
+    QCOMPARE(r.addresses, QString("enx00e04c361458 192.168.8.70 · wlan0 10.0.0.5"));
+    QCOMPARE(NetStatus::pickLink({wlan, eth}, {}, "").link, QString("ethernet"));
+
+    // A cable with no DHCP lease loses to WiFi with an address, but still shows.
+    r = NetStatus::pickLink({ethNoIp, wlan}, {}, "");
+    QCOMPARE(r.link, QString("wifi"));
+    QCOMPARE(r.addresses, QString("eth0 no IPv4 · wlan0 10.0.0.5"));
+
+    // Nothing connected.
+    QCOMPARE(NetStatus::pickLink({wlanDown}, {}, "").link, QString("down"));
+    QCOMPARE(NetStatus::pickLink({}, {}, "").link, QString("down"));
+
+    // Explicit list: only those names, in that order.
+    r = NetStatus::pickLink({eth, wlan}, {"wlan0", "enx00e04c361458"}, "");
+    QCOMPARE(r.link, QString("wifi"));
+    QCOMPARE(NetStatus::pickLink({eth}, {"wlan0"}, "").link, QString("down"));
+
+    QVERIFY(NetStatus::isVirtualName("zt3jnkd5xd"));
+    QVERIFY(NetStatus::isVirtualName("docker0"));
+    QVERIFY(NetStatus::isVirtualName("lo"));
+    QVERIFY(!NetStatus::isVirtualName("enx00e04c361458"));
+    QVERIFY(!NetStatus::isVirtualName("wlan0"));
+    QVERIFY(!NetStatus::isVirtualName("eth0"));
+  }
+
+  void defaultRoute() {
+    const QByteArray route =
+        "Iface\tDestination\tGateway \tFlags\tRefCnt\tUse\tMetric\tMask\t\tMTU\tWindow\tIRTT\n"
+        "zt3jnkd5xd\t0011930A\t00000000\t0001\t0\t0\t0\t00FFFFFF\t0\t0\t0\n"
+        "enx00e04c361458\t00000000\t0108A8C0\t0003\t0\t0\t100\t00000000\t0\t0\t0\n"
+        "enx00e04c361458\t0008A8C0\t00000000\t0001\t0\t0\t100\t00FFFFFF\t0\t0\t0\n";
+    QCOMPARE(NetStatus::parseDefaultRoute(route), QString("enx00e04c361458"));
+    QCOMPARE(NetStatus::parseDefaultRoute("Iface\tDestination\n"), QString());
+  }
 };
 
 QTEST_GUILESS_MAIN(TstBackend)
