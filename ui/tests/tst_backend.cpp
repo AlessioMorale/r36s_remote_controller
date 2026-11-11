@@ -206,7 +206,7 @@ class TstBackend : public QObject {
     QStringList names;
     for (const auto& v : root) names << v.toMap().value("name").toString();
     QCOMPARE(names, (QStringList{"Packet Rate", "TX Power", "Bind", "Gain"}));  // hidden skipped
-    const auto tx = p.childrenOf(4);  // children [5, 6]; 6 unknown -> skipped
+    const auto tx = p.childrenOf(4);  // children [5, 6]; only 5 has parent 4
     QCOMPARE(tx.size(), 1);
     QCOMPARE(p.displayValue(5), QString("100 mW"));
     QCOMPARE(p.displayValue(5, 4), QString("250 mW"));
@@ -221,6 +221,33 @@ class TstBackend : public QObject {
     QCOMPARE(p.stepValue(1, 2, -1).toInt(), 0);
     QCOMPARE(p.stepValue(12, 125, +1).toLongLong(), 130);
     QCOMPARE(p.stepValue(12, 498, +1).toLongLong(), 500);
+  }
+
+  // A folder's contents come from the entries' `parent`, whatever the folder's own `children`
+  // says: a real module may send no list (empty), a wrong one, or none at all.
+  void folderChildrenFollowParent() {
+    ParamModel p;
+    QVERIFY(p.setTree(json(R"({"type":"params","complete":true,"device":{"name":"x"},"params":[
+      {"number":1,"parent":0,"type":"folder","name":"Empty list","hidden":false,"children":[]},
+      {"number":2,"parent":1,"type":"text_selection","name":"A","hidden":false,"value":0,"min":0,"max":1,"options":["a","b"],"unit":""},
+      {"number":3,"parent":1,"type":"info","name":"B","hidden":false,"text":"b"},
+      {"number":4,"parent":0,"type":"folder","name":"Wrong list","hidden":false,"children":[9,10]},
+      {"number":5,"parent":4,"type":"info","name":"C","hidden":false,"text":"c"},
+      {"number":6,"parent":4,"type":"info","name":"Hidden","hidden":true,"text":"h"},
+      {"number":7,"parent":0,"type":"folder","name":"No list","hidden":false},
+      {"number":8,"parent":7,"type":"info","name":"D","hidden":false,"text":"d"},
+      {"number":9,"parent":8,"type":"info","name":"Nested","hidden":false,"text":"n"}
+    ]})")));
+    auto names = [&](int folder) {
+      QStringList out;
+      for (const auto& v : p.childrenOf(folder)) out << v.toMap().value("name").toString();
+      return out;
+    };
+    QCOMPARE(names(0), (QStringList{"Empty list", "Wrong list", "No list"}));
+    QCOMPARE(names(1), (QStringList{"A", "B"}));  // empty children list
+    QCOMPARE(names(4), (QStringList{"C"}));       // wrong list, one hidden entry
+    QCOMPARE(names(7), (QStringList{"D"}));       // no list at all
+    QCOMPARE(names(8), (QStringList{"Nested"}));  // a non-folder parent is still followed
   }
 
   // ------------------------------------------------------------- IpcClient
@@ -337,6 +364,64 @@ class TstBackend : public QObject {
     QCOMPARE(NetStatus::parsePeers(peers, "2222222222").path, QString("relayed"));
     QCOMPARE(NetStatus::parsePeers(peers, "9999999999").path, QString("relayed"));
     QCOMPARE(NetStatus::parsePeers(peers, "").path, QString("unknown"));
+  }
+
+  // -------------------------------------------------------------- link (WiFi or Ethernet)
+  void linkSelection() {
+    using I = NetStatus::Iface;
+    const I eth{"enx00e04c361458", false, true, {"192.168.8.70"}};
+    const I wlan{"wlan0", true, true, {"10.0.0.5"}};
+    const I wlanDown{"wlan0", true, false, {}};
+    const I ethNoIp{"eth0", false, true, {}};
+
+    // Ethernet only (the current R36S): a full link, with its address.
+    auto r = NetStatus::pickLink({eth, wlanDown}, {}, "");
+    QCOMPARE(r.link, QString("ethernet"));
+    QCOMPARE(r.ifname, QString("enx00e04c361458"));
+    QCOMPARE(r.address, QString("192.168.8.70"));
+    QCOMPARE(r.addresses, QString("enx00e04c361458 192.168.8.70"));
+
+    // WiFi only.
+    r = NetStatus::pickLink({I{"eth0", false, false, {}}, wlan}, {}, "");
+    QCOMPARE(r.link, QString("wifi"));
+    QCOMPARE(r.address, QString("10.0.0.5"));
+
+    // Both: the default route decides; without one, wired wins. Both are listed.
+    r = NetStatus::pickLink({eth, wlan}, {}, "wlan0");
+    QCOMPARE(r.link, QString("wifi"));
+    QCOMPARE(r.addresses, QString("enx00e04c361458 192.168.8.70 · wlan0 10.0.0.5"));
+    QCOMPARE(NetStatus::pickLink({wlan, eth}, {}, "").link, QString("ethernet"));
+
+    // A cable with no DHCP lease loses to WiFi with an address, but still shows.
+    r = NetStatus::pickLink({ethNoIp, wlan}, {}, "");
+    QCOMPARE(r.link, QString("wifi"));
+    QCOMPARE(r.addresses, QString("eth0 no IPv4 · wlan0 10.0.0.5"));
+
+    // Nothing connected.
+    QCOMPARE(NetStatus::pickLink({wlanDown}, {}, "").link, QString("down"));
+    QCOMPARE(NetStatus::pickLink({}, {}, "").link, QString("down"));
+
+    // Explicit list: only those names, in that order.
+    r = NetStatus::pickLink({eth, wlan}, {"wlan0", "enx00e04c361458"}, "");
+    QCOMPARE(r.link, QString("wifi"));
+    QCOMPARE(NetStatus::pickLink({eth}, {"wlan0"}, "").link, QString("down"));
+
+    QVERIFY(NetStatus::isVirtualName("zt3jnkd5xd"));
+    QVERIFY(NetStatus::isVirtualName("docker0"));
+    QVERIFY(NetStatus::isVirtualName("lo"));
+    QVERIFY(!NetStatus::isVirtualName("enx00e04c361458"));
+    QVERIFY(!NetStatus::isVirtualName("wlan0"));
+    QVERIFY(!NetStatus::isVirtualName("eth0"));
+  }
+
+  void defaultRoute() {
+    const QByteArray route =
+        "Iface\tDestination\tGateway \tFlags\tRefCnt\tUse\tMetric\tMask\t\tMTU\tWindow\tIRTT\n"
+        "zt3jnkd5xd\t0011930A\t00000000\t0001\t0\t0\t0\t00FFFFFF\t0\t0\t0\n"
+        "enx00e04c361458\t00000000\t0108A8C0\t0003\t0\t0\t100\t00000000\t0\t0\t0\n"
+        "enx00e04c361458\t0008A8C0\t00000000\t0001\t0\t0\t100\t00FFFFFF\t0\t0\t0\n";
+    QCOMPARE(NetStatus::parseDefaultRoute(route), QString("enx00e04c361458"));
+    QCOMPARE(NetStatus::parseDefaultRoute("Iface\tDestination\n"), QString());
   }
 };
 

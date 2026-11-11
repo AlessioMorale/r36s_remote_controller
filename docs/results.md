@@ -6,7 +6,8 @@ needs something this work did not have (the device, a TX module, the robot, or a
 
 Environment of the checks below: macOS 26 on Apple Silicon (host), Docker on Colima with an
 aarch64 Ubuntu 24.04 / ROS 2 Jazzy container (Linux, uinput available), Qt 6.11 on the host.
-Nothing has been run on the R36S, on a real TX module, or on the robot.
+The daemon and the UI also run on the real R36S (Armbian noble), see "Handheld deployment"
+below. Nothing has been run on a real TX module or on the robot.
 
 Summary of what the automated suites cover today:
 
@@ -39,7 +40,10 @@ tested with `x264enc`; hardware encoders are not.
 `budgets.md` holds the proposed table plus the two choices made while building (link-lost
 alarm timing, arm hold time). **Pending**: your review and sign-off.
 
-### T0.5 Identify board revision and panel: Pending
+### T0.5 Identify board revision and panel: Partly
+R36S board with Panel 0 (PanCho "Original Panel"); the panel is merged into the device tree by
+`image/armbian/dtb` because the image's `fdt apply` path fails for it. **Pending**: silkscreen
+photo and the `hardware.md` table.
 ### T0.6 Choose the WiFi dongle: Pending
 
 ### T0.7 Choose the screen layout: Pending (decision needed)
@@ -51,10 +55,11 @@ Screenshots: `screenshots/{full,degraded,menu,elrs_lost,lq_degraded}.png` and `_
 
 ## Phase 1
 
-### T1.1 Build or flash both candidate images: Pending
-`image/armbian/` (config, `customize-image.sh`, README) and `image/darkos/provision.sh` are
-written and syntax-checked, **not built or flashed**. They assume package names and boot
-file locations that must be checked on the first build.
+### T1.1 Build or flash both candidate images: Partly
+Only one image was flashed: Armbian noble, R36S-Armbian RC5 (kernel 6.12.32), provisioned with
+`image/noble` (see "Handheld deployment on Armbian noble" below). The arkos4clone (d)ArkOS
+rootfs was not used. dArkOS was not tried; `image/armbian/` (config, `customize-image.sh`) and
+`image/darkos/provision.sh` are written and syntax-checked, **not built or flashed**.
 
 ### T1.2 Cross-compilation toolchain: Partly
 * `cargo build`/`test` of the whole workspace, including the C++ CRSF library through `cxx`,
@@ -63,22 +68,29 @@ file locations that must be checked on the first build.
 * `image/build.sh` builds daemon, tools and UI in a Debian trixie arm64 container;
   `toolchain-aarch64.cmake` and `sysroot.sh` are the x86 cross variant. **None of these ran**
   (the Docker disk had no room for a trixie image).
-* **Pending**: the build running on the device.
+* `image/noble/build.sh` builds daemon, `ctl`, UI and the gst-plugins-rs plugins natively in an
+  arm64 Ubuntu 24.04 container; the binaries run on the device (glibc 2.39, Qt 6.4, GStreamer 1.24).
+* **Pending**: building on the device itself.
 
 ### T1.3 Internal UART bring-up: Partly
 `systemd/99-elrs-tx.rules` (`/dev/elrs_tx`), the two units and `test_tools/crsf_capture`
 exist. The capture tool read 93 valid frames, 0 CRC errors, from the fake module (LINK_STATISTICS,
 DEVICE_INFO after ping, battery, flight mode, sync). `systemd-analyze verify` passes on both
-units. **Pending**: everything on the device (the UART resolves, `stty 921600`, 5 reboots).
+units. On the device (see "Handheld deployment"): the console and getty are gone from `ttyS2`
+and `/dev/elrs_tx` resolves to it after a reboot. **Pending**: `stty 921600`, 5 reboots with the
+module attached.
 
 ### T1.4 WiFi and ZeroTier: Pending
 ### T1.5 Lichtblick on device: Partly
 `lichtblick/build.sh` (pinned v1.29.1) and `layout.json` are written; neither was run or
-loaded in Lichtblick. The UI hosts a `WebEngineView` with a watchdog; it was exercised only
+loaded in Lichtblick. The handheld image has no Qt WebEngine, so the native WebRTC view is
+used for video there. The UI hosts a `WebEngineView` with a watchdog; it was exercised only
 with a local stand-in page on macOS. **Pending**: all device measurements (GPU, H.264 fps, RAM).
 
-### Gate G1: Pending
-Needs T1.1–T1.5 on both images.
+### Gate G1: Decided in practice
+Armbian noble (R36S-Armbian RC5) is the platform in use. The gate's measurements (T1.3 and
+T1.5 on both images) were not made; dArkOS was never flashed. Record the decision when the
+Lichtblick and hardware-decode measurements are in.
 
 ---
 
@@ -178,6 +190,8 @@ battery and status tiles, the loud gamepad-lost banner, and the full-screen ELRS
 stale values once the module went silent. **Pending**: eglfs on the device, outdoor readability,
 the gamepad-only menu pass with real buttons, and the "pull the module's power" test (the same
 alarm path was verified with the fake module).
+
+Menu folders showed no content on a real module: the UI took a folder's contents from its `children` list, which the daemon always sends and which is empty when the module's entry has no list. The ExpressLRS Lua script uses each entry's `parent` instead, and so does the UI now (`ParamModel::childrenOf`). Regression test `folderChildrenFollowParent` covers an empty, a wrong and a missing list; it fails on the old code. Not yet seen on the device (it was off the network when this was fixed).
 
 ### T3.9 Image provisioning and supervision: Partly
 `rc-control-daemon.service` (`Restart=always`, 200 ms, real-time, no network ordering) and

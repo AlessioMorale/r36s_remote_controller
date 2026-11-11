@@ -2,7 +2,7 @@ import QtQuick
 import RcUi
 import RcBackend 1.0
 
-// The WiFi-fed part of the screen (design §3.2.1 option B): video on top
+// The network-fed part of the screen (WiFi or Ethernet) (design §3.2.1 option B): video on top
 // (videoH) and the plots strip below. video.source picks the video: "webrtc"
 // (native view, WebrtcView, the robot's webrtcsink stream; no plots) or
 // "lichtblick" (below). With the robot's bridge reachable it
@@ -52,7 +52,7 @@ Item {
         if (AppConfig.videoSource === "webrtc" && !Webrtc.available) return "WebRTC not available in this build"
         if (!AppConfig.lichtblickEnabled && !useWebrtc) return "Lichtblick disabled in config"
         if (!AppConfig.webEngineAvailable) return "built without QtWebEngine"
-        if (Net.wifi === "down") return "WiFi down"
+        if (Net.link === "down") return "no network (WiFi or Ethernet)"
         if (Net.vpn === "down") return "VPN down"
         if (!Net.robotReachable) return "robot bridge " + Net.robotEndpoint + " unreachable"
         return ""
@@ -74,7 +74,7 @@ Item {
         y: area.videoH + 2
         width: area.width
         height: area.height - area.videoH - 2
-        headline: area.useWebrtc ? "Video only" : "Plots need WiFi"
+        headline: area.useWebrtc ? "Video only" : "Plots need network"
         headlineSize: 18
         detail: ""
     }

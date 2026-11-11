@@ -12,7 +12,7 @@
 # (package.json: "web:build:prod": "webpack --mode production ... web/webpack.config.ts";
 #  packageManager yarn@4.17.0, engines node >=20, Docker build image node:22.)
 # The bundle lands in web/.webpack; this script copies it to out_dir and bakes
-# layout.json into index.html. THIS SCRIPT HAS NOT BEEN RUN END TO END (heavy build).
+# layout.json plus a workspace seed (sidebars closed) into index.html (bake_index.py). THIS SCRIPT HAS NOT BEEN RUN END TO END (heavy build).
 #
 # Layout injection: upstream's index.html contains
 #   globalThis.LICHTBLICK_SUITE_DEFAULT_LAYOUT = [/*LICHTBLICK_SUITE_DEFAULT_LAYOUT_PLACEHOLDER*/][0];
@@ -61,17 +61,8 @@ rm -rf "$OUT"
 mkdir -p "$OUT"
 cp -R "$BUNDLE"/. "$OUT"/
 
-# Bake the fixed layout into index.html (compact JSON, no "/" sequences that could end the script).
-python3 - "$OUT/index.html" "$HERE/layout.json" <<'PY'
-import json, sys
-index, layout = sys.argv[1], sys.argv[2]
-html = open(index, encoding="utf-8").read()
-marker = "/*LICHTBLICK_SUITE_DEFAULT_LAYOUT_PLACEHOLDER*/"
-if marker not in html:
-    sys.exit("placeholder not found in index.html; upstream changed, review build.sh")
-data = json.dumps(json.load(open(layout, encoding="utf-8")), separators=(",", ":")).replace("</", "<\\/")
-open(index, "w", encoding="utf-8").write(html.replace(marker, data, 1))
-PY
+# Bake the fixed layout and the closed-sidebar workspace seed into index.html.
+python3 "$HERE/bake_index.py" "$OUT/index.html" "$HERE/layout.json"
 
 {
   echo "lichtblick $LICHTBLICK_TAG"

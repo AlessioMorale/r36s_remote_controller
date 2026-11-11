@@ -37,18 +37,14 @@ void ParamModel::clear() {
 }
 
 QVariantList ParamModel::childrenOf(int folder) const {
-  QList<int> numbers;
-  const auto f = m_params.constFind(folder);
-  if (f != m_params.cend() && f->contains(QStringLiteral("children"))) {
-    for (const auto& c : f->value(QStringLiteral("children")).toList()) numbers << c.toInt();
-  } else {
-    for (auto it = m_params.cbegin(); it != m_params.cend(); ++it)
-      if (it.key() != folder && it->value(QStringLiteral("parent")).toInt() == folder) numbers << it.key();
-  }
+  // Membership comes from each entry's `parent`, as in the ExpressLRS Lua script (a field is shown
+  // in the folder whose id is its parent). A folder entry's own `children` list is not used: real
+  // modules may send none, and trusting an empty list made every folder look empty. m_params is
+  // ordered by number, which is the module's display order.
   QVariantList out;
-  for (int n : numbers) {
-    const auto it = m_params.constFind(n);
-    if (it == m_params.cend() || it->value(QStringLiteral("hidden")).toBool()) continue;
+  for (auto it = m_params.cbegin(); it != m_params.cend(); ++it) {
+    if (it.key() == folder || it->value(QStringLiteral("parent")).toInt() != folder) continue;
+    if (it->value(QStringLiteral("hidden")).toBool()) continue;
     out << *it;
   }
   return out;

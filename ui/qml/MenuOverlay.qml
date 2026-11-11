@@ -27,7 +27,7 @@ Rectangle {
 
     readonly property var page: stack[stack.length - 1]
     readonly property var rows: buildRows(page, Params.revision, pending, busy, calibrating,
-                                          Net.summary, Net.robotReachable, Ipc.connected,
+                                          Net.summary, Net.addresses, Net.robotReachable, Ipc.connected,
                                           Ipc.daemonVersion, AppConfig.theme)
     // A function, not a binding: as a property its first evaluation pulled in `rows`, whose
     // onRowsChanged handler writes `current`, which `row` depends on (a binding loop on Qt 6.4).
@@ -74,7 +74,8 @@ Rectangle {
                      value: isBusy("a:calibrate") ? "…" : calibrating ? "Recording: A save, B cancel" : "Start" })
 
             r.push(section("System"))
-            r.push(info("i:net", "WiFi / VPN", Net.summary))
+            r.push(info("i:net", "Network / VPN", Net.summary + (Net.linkInterface ? " · " + Net.linkInterface : "")))
+            r.push(info("i:addr", "IP address", Net.addresses || (Net.link === "unknown" ? "detection off" : "none")))
             r.push(info("i:bridge", "Robot bridge", Net.robotEndpoint + (Net.robotReachable ? ", reachable" : ", unreachable")))
             r.push({ kind: "choice", key: "c:theme", label: "Theme", value: Theme.dark ? "Night" : "Paper (sunlight)" })
             r.push(info("i:daemon", "Daemon", Ipc.connected ? (Ipc.daemonVersion || "?") + " · IPC v" + Ipc.protocolVersion
@@ -106,11 +107,20 @@ Rectangle {
     Component.onCompleted: { ready = true; setCurrent(firstFocusable()) }
     onRowsChanged: {
         if (!ready) return
+        // A new rows array resets the ListView to the top (it happens whenever a live value such
+        // as the network latency changes), so scroll back to the focused row every time.
+        let found = -1
         for (let i = 0; i < rows.length; ++i)
-            if (rows[i].key === currentKey && focusable(i)) { current = i; return }
-        setCurrent(firstFocusable())
+            if (rows[i].key === currentKey && focusable(i)) { found = i; break }
+        if (found >= 0) current = found
+        else setCurrent(firstFocusable())
+        Qt.callLater(showCurrent)
     }
-    onCurrentChanged: list.positionViewAtIndex(Math.max(0, current - (current > 0 && rows[current - 1].kind === "section" ? 1 : 0)), ListView.Contain)
+    function showCurrent() {
+        if (current < 0 || current >= rows.length) return
+        list.positionViewAtIndex(Math.max(0, current - (current > 0 && rows[current - 1].kind === "section" ? 1 : 0)), ListView.Contain)
+    }
+    onCurrentChanged: showCurrent()
 
     function reset() {
         stack = [{ kind: "root", title: "" }]

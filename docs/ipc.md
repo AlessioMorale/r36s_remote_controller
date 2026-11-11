@@ -129,6 +129,11 @@ acknowledged by the module, and on connect if a tree is known.
 `min`, `max`, `unit`; `float` adds `decimal_point` and `step`; `string`/`info` carry
 `text`.
 
+A folder's contents are the entries whose `parent` is the folder's `number` (`0` is the root),
+shown in `number` order, without the `hidden` ones. This is how the ExpressLRS Lua script does
+it. A folder's `children` list is only what the module's entry body held after the name; it can
+be empty or absent, so clients must not rely on it.
+
 ### `ack`
 
 The reply to every request that has an `id`.

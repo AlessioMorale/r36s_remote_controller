@@ -4,7 +4,8 @@ import RcBackend 1.0
 
 // Always-on status bar, drawn natively above everything (design §3.2).
 // Left: daemon link, input mode, turbo, gamepad, active overrides (design §6).
-// Right: handheld battery and the WiFi/VPN indicator (quiet severity: never red).
+// Right: handheld battery, the handheld's IP address (WiFi or Ethernet, always shown) and the
+// network/VPN indicator (quiet severity: never red).
 // Violet fill, so every text on it is Paper (5.7:1).
 Rectangle {
     id: bar
@@ -82,6 +83,14 @@ Rectangle {
             font.family: Theme.mono
             font.pixelSize: Theme.fsBar - 1
             font.weight: Host.percent <= 15 ? Font.DemiBold : Font.Normal
+        }
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: Net.address !== "" ? Net.address : Net.link === "down" ? "no IP" : ""
+            visible: text !== ""
+            color: Theme.onBar
+            font.family: Theme.mono
+            font.pixelSize: Theme.fsBar - 1
         }
         Row {
             spacing: 6

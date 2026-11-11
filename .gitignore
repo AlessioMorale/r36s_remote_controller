@@ -1,5 +1,30 @@
+# Rust
 target/
+
+# CMake / Qt
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Testing/
+
+# Build outputs
 dist/
 image/sysroot/
+
+# Python
 __pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Local environments
+.venv/
+venv/
+
+# OS / IDE
 .DS_Store
+Thumbs.db
+*.user
+*.user.*

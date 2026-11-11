@@ -30,8 +30,8 @@ class ParamModel : public QObject {
   QVariantMap device() const { return m_device; }
   int count() const { return int(m_params.size()); }
 
-  // Visible children of a folder (0 = root), in the folder's `children` order
-  // when given, otherwise by parameter number. Hidden entries are skipped.
+  // Visible children of a folder (0 = root): the entries whose `parent` is that folder, by
+  // parameter number. Hidden entries are skipped.
   Q_INVOKABLE QVariantList childrenOf(int folder) const;
   Q_INVOKABLE QVariantMap param(int number) const { return m_params.value(number); }
   Q_INVOKABLE bool isEditable(int number) const;

@@ -26,12 +26,12 @@
       "showXAxisLabels": true,
       "showYAxisLabels": true,
       "showLegend": true,
-      "legendDisplay": "floating",
+      "legendDisplay": "left",
       "showPlotValuesInLegend": false,
       "isSynced": true,
       "xAxisVal": "timestamp",
       "followingViewWidth": 30,
-      "sidebarDimension": 0
+      "sidebarDimension": 120
     }
   },
   "globalVariables": {},

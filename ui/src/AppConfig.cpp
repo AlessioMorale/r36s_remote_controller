@@ -1,6 +1,7 @@
 #include "AppConfig.h"
 
 #include <QFile>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QSettings>
 
@@ -80,7 +81,23 @@ void AppConfig::loadFromJson(const QJsonObject& root) {
   m_lbHangTimeoutMs = num(lb, "hang_timeout_ms", m_lbHangTimeoutMs);
 
   const auto net = root.value(QLatin1String("net")).toObject();
-  m_wifiInterface = str(net, "wifi_interface", m_wifiInterface);
+  // net.interfaces: "auto" | "off" | ["eth0", "wlan0", ...]. The older net.wifi_interface is
+  // honoured only as "" (= off, used by the screenshot script); a name there no longer limits
+  // the UI to WiFi, so an existing /etc/rc/ui.json with "wlan0" also works over Ethernet.
+  const QJsonValue ifs = net.value(QLatin1String("interfaces"));
+  if (ifs.isArray()) {
+    m_netInterfaces.clear();
+    for (const auto& v : ifs.toArray())
+      if (!v.toString().isEmpty()) m_netInterfaces << v.toString();
+    m_netAuto = false;
+    m_netOff = m_netInterfaces.isEmpty();
+  } else if (ifs.isString()) {
+    m_netOff = ifs.toString() == QLatin1String("off");
+    m_netAuto = !m_netOff;
+  } else if (net.value(QLatin1String("wifi_interface")).toString(QStringLiteral("x")).isEmpty()) {
+    m_netOff = true;
+    m_netAuto = false;
+  }
   m_zerotierCli = str(net, "zerotier_cli", m_zerotierCli);
   m_zerotierNetwork = str(net, "zerotier_network", m_zerotierNetwork);
   m_robotNodeId = str(net, "robot_node_id", m_robotNodeId);
