@@ -2,6 +2,77 @@
 
 Implements [design.md](design.md). The order puts the riskiest assumptions first (handheld platform, Lichtblick feasibility). It then gets the ELRS-only system working end to end before any WiFi feature is added, because the ELRS-only system is already a complete product (design §1).
 
+## Status (2026-11-11)
+
+The full system has been tested with the robot. ELRS control works end to end: the handheld drives the robot over the TX module. Video through the Foxglove bridge reaches the handheld but lags too much for teleoperation, so the next step is a working WebRTC video path. Not yet done: WebRTC video on the real link, the remaining hardware checks and everything in Phase 5. Evidence and caveats per task: [docs/results.md](docs/results.md).
+
+| Milestone | Status |
+|---|---|
+| **M0** Hardware ready | Open: camera chain latency (T0.3), layout decision (T0.7) |
+| **M1** Platform chosen | Decided in practice: Armbian noble ([R36S-Armbian RC5](https://github.com/R36S-Stuff/R36S-Armbian/releases/tag/RC5), kernel 6.12). The Gate G1 measurements for dArkOS were not made |
+| **M2** Shared code ready | Code and tests done; robot-side hardware checks pending (T2.3, T2.4) |
+| **M3** ELRS-only product | Works: the handheld drives the robot over ELRS. Results still to record in results.md |
+| **M4** WiFi enhancement | Video over the Foxglove bridge works on the real link but is too laggy for teleoperation; WebRTC video is next |
+| **M5** Accepted | Not started |
+
+Status key: **Verified** the plan's check ran and passed; **Tested** works in the system test, result not yet recorded in results.md; **Partly** what ran and what is left is in results.md; **Pending** needs hardware or a decision.
+
+| Task | Status | Note |
+|---|---|---|
+| T0.1 Turbo button | Partly | Config fixed; on-robot check pending |
+| T0.2 Wire TX module | Tested | Module wired; ELRS works in the system test |
+| T0.3 Camera chain | Pending | Robot is a Raspberry Pi 5: no hardware H.264 encoder, so software x264 |
+| T0.4 Budgets | Partly | Awaiting your sign-off |
+| T0.5 Board and panel | Partly | R36S, Panel 0 (original); merged dtb tooling in `image/armbian/dtb`; silkscreen photo not recorded |
+| T0.6 WiFi dongle | Pending | An adapter exists; the device was unreachable after it was plugged in, credentials not given |
+| T0.7 Screen layout | Pending | Built as Option B; Slamming Works look applied; decision still needed |
+| T1.1 Images | Partly | Only Armbian noble flashed and provisioned (`image/noble`); dArkOS not tried |
+| T1.2 Cross-compilation | Partly | `image/noble/build.sh` builds natively in an arm64 noble container; the binaries run on the device |
+| T1.3 UART bring-up | Tested | `/dev/elrs_tx` -> `ttyS2`; ELRS works with the module. Baud test and 5-reboot check not recorded |
+| T1.4 WiFi and ZeroTier | Pending | Not installed or configured |
+| T1.5 Lichtblick on device | Changed | No WebEngine on the device; Foxglove-bridge video too laggy for teleoperation; native WebRTC view is the video path, Lichtblick stays optional |
+| Gate G1 | Decided in practice | Armbian noble; record the decision and the open G1 measurements |
+| T2.1 CRSF library | Verified | |
+| T2.2 Rust bindings | Partly | Fuzz run done; not on the device |
+| T2.3 `crsf_joy_node` status | Tested | Robot driven from the handheld over ELRS |
+| T2.4 Status node | Partly | Tests pass; on-robot check pending |
+| T3.1 Test tools | Verified | |
+| T3.2 Daemon TX loop | Partly | Runs on the device: 4 ms frames, 175 us p99 jitter, no module |
+| T3.3 Input mapping | Partly | Pad found (`r36s_Gamepad`); calibration on the device pending |
+| T3.4 Safety state machine | Verified | |
+| T3.5 Telemetry model | Tested | Works with the real module |
+| T3.6 Module configuration | Tested | Works with the real module |
+| T3.7 IPC server | Verified | |
+| T3.8 Native UI | Partly | Runs on `eglfs` with the daemon connected; screen output not confirmed by me; alarm tone silent (no audio session for `rc`) |
+| T3.9 Provisioning | Partly | `image/noble/deploy.sh` ran on the device, reboot-tested; fresh-image run pending |
+| T3.10 CI | Partly | Workflow written, not run on GitHub |
+| T4.1 Bridge hardening | Verified | In a container |
+| T4.2 Video streamer | Partly | Adds an optional WebRTC branch; tested on ROS Lyrical in a container |
+| T4.3 Robot CPU isolation | Partly | Units written, not run on the robot |
+| T4.4 VPN and firewall | Partly | Rules for 8765 and 8443 syntax-checked |
+| T4.5 Video view | Partly | Foxglove-bridge video runs on the real link but lags too much to drive by; WebRTC view tested only in a container, next to bring up on the real link |
+| T4.6 Link-health indicators | Partly | Needs WiFi and ZeroTier on the device |
+| Phase 5 (A1 to A5) | Pending | Needs the full system |
+
+### Changes to the plan since it was written
+
+* **Platform**: Armbian noble (RC5) instead of choosing between Armbian trixie and dArkOS. The arkos4clone (d)ArkOS rootfs was tried first and dropped.
+* **Video**: the Foxglove-bridge video path was tested on the real system and lags too much for teleoperation, so WebRTC is now the primary video path. Besides the Foxglove and Lichtblick path, the robot can stream H.264 over WebRTC (gst-plugins-rs `webrtcsink`) to a native view in the UI. Works with software x264 on the Pi 5 and needs no WebEngine on the handheld. Measurements and caveats: results.md, "WebRTC spike".
+* **Robot**: ROS 2 Lyrical on Ubuntu 26.04, not Jazzy. The older units and docs still say Jazzy.
+* **Install layout**: everything the project installs on the handheld goes under `/opt/kvn_remote_control`.
+* **Repository**: `deps/elrs_joy` is the only submodule; the robot packages live in the kvn-robot repository.
+* **UI**: Slamming Works look, and fixes needed for Qt 6.4 (the device's Qt).
+
+### Next
+
+1. **WebRTC video end to end**: robot `webrtcsink` stream (T4.2) to the native WebRTC view on the R36S (T4.5) over the real link; measure glass-to-glass latency and decoder cost, then make it the default `video.source`.
+2. Record the ELRS system test in results.md (T0.2, T1.3, T2.3, T3.5, T3.6, M3).
+3. Fix the alarm tone (give `rc` an audio path).
+4. Remaining robot checks: T0.3 camera chain, T0.1, T2.4, T4.3; network tasks T1.4, T4.4 and T4.6.
+5. Your decisions: layout (T0.7) and budgets (T0.4). Then record Gate G1 and run Phase 5.
+
+---
+
 ## How to Read This Plan
 
 Every task has:
@@ -139,6 +210,7 @@ Phase 2 does not depend on the platform spike and can run in parallel with Phase
   * `qmlscene --version` (or a Qt 6 binary) runs.
   * `modprobe tun` succeeds.
   * Idle RAM after boot is recorded (`free -m`).
+NOTE, AM: using noble version from https://github.com/R36S-Stuff/R36S-Armbian/releases/tag/RC5 instead
 
 ### T1.2 Cross-compilation toolchain
 * **Depends on**: T1.1
